@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Menu;
 import android.view.View;
 import android.widget.Button;
@@ -29,14 +30,17 @@ public class MainActivity extends Activity {
         startService.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                startService(new Intent(context, TCPLink.class));
+
+                startService(new Intent(MainActivity.this, TCPLink.class));
+
             }
         });
 
         stopService.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-
+                stopService(new Intent(MainActivity.this, TCPLink.class));
+                Log.i("Loger", "Stop Servise");
             }
         });
 
