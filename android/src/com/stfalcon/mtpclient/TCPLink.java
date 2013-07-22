@@ -159,8 +159,10 @@ public class TCPLink extends Service {
                 // Получаем принятое от сервера сообщение
                 //String prop = String.valueOf(mData);
                 Log.v("GET_DATA", "data: " + Utils.byteArrayToHex(mData));
+                Parser.parseReqPqResponse(mData);
             } catch (Exception e) {
                 MTPapp.showToastMessage("Socket error: " + e.getMessage());
+                e.printStackTrace();
             }
         }
 
