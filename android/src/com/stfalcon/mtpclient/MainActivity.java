@@ -3,21 +3,24 @@ package com.stfalcon.mtpclient;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
-import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
 import android.view.View;
 import android.widget.Button;
 
+import java.math.BigInteger;
+
 
 public class MainActivity extends Activity {
 
+    TCPLink tcpLink = new TCPLink();
     private Context context;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         setContentView(R.layout.activity_main);
+        startService(new Intent(MainActivity.this, TCPLink.class));
         super.onCreate(savedInstanceState);
     }
 
@@ -31,15 +34,17 @@ public class MainActivity extends Activity {
         startService.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                startService(new Intent(context, TCPLink.class));
+                tcpLink.sendReqPqRequest();
             }
         });
 
         stopService.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                stopService(new Intent(MainActivity.this, TCPLink.class));
-                Log.i("Loger", "Stop Servise");
+                BigIntegerMath bigIntegerMath = new BigIntegerMath();
+                bigIntegerMath.factor(new BigInteger("55465884552"));
+                //bigIntegerMath.getfactors();
+                Log.v("LOGER", bigIntegerMath.getfactors());
             }
         });
 

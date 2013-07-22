@@ -8,16 +8,11 @@ import android.os.AsyncTask;
 import android.os.IBinder;
 import android.util.Log;
 
-import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.Socket;
-import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
-import java.util.Random;
-import java.util.zip.CRC32;
 
 /**
  * Created by user on 7/19/13.
@@ -25,7 +20,6 @@ import java.util.zip.CRC32;
 public class TCPLink extends Service {
     private static final String HOST = "95.142.192.65";
     public static TCPLink self;
-    String binaryString;
 
     public static TCPLink getInstance() {
         if (self == null) {
@@ -53,39 +47,32 @@ public class TCPLink extends Service {
     // Здесь выполняем инициализацию нужных нам значений
 // и открываем наше сокет-соединение
     private void startService() {
-
-        Log.i("Loger", "Start Servise");
-
-        binaryString = "34 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 1d 36 e8 51 14 00 00 00 78 97 46 60 04 91 61 61 8e 47 6b bd 82 3b 53 fb 09 1a 88 00 5d bc 15 65";
-
+        /*Log.i("Loger", "Start Service");
         try {
             openConnection();
 
         } catch (InterruptedException e) {
             e.printStackTrace();
-        }
+        }*/
     }
 
-    // данный метод открыает соединение
-    public void openConnection() throws InterruptedException {
+    public void sendReqPqRequest() {
         try {
 
             // PutData - это класс, с помощью которого мы передадим параметры в
             // создаваемый поток
             PutData data = new PutData();
-            data.dataFromServer = binaryString;
+            data.request = RequestBuilder.createReq_PqRequest();
             data.context = this;
-
             // создаем новый поток для сокет-соединения
             new ToSocket().execute(data);
-
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
     class PutData {
-        String dataFromServer;
+        byte[] request;
         Context context;
     }
 
@@ -111,7 +98,7 @@ public class TCPLink extends Service {
             InetAddress serverAddr;
 
             mCtx = param[0].context;
-            String toServer = param[0].dataFromServer;
+            byte[] toServer = param[0].request;
 
             try {
                 // while (true) {
@@ -127,84 +114,14 @@ public class TCPLink extends Service {
                 GetPacket pack = new GetPacket();
                 AsyncTask<SocketData, Integer, Integer> running = pack.execute(data);
 
-                String message = toServer;
-                // Посылаем dataFromServer на сервер
+
+                // Посылаем request на сервер
                 try {
-                    //Log.v("SEND_DATA", "send " + message);
+                    Log.v("SEND_DATA", "send " + Utils.byteArrayToHex(toServer));
                     DataOutputStream dos = new DataOutputStream(mySock.getOutputStream());
-                    long time = System.currentTimeMillis() / 1000L;
-                    ByteBuffer bytes = ByteBuffer.allocate(8);
-                    bytes.order(ByteOrder.LITTLE_ENDIAN);
-                    bytes.putInt(52);
-                    Log.v("LOGER", Utils.byteArrayToHex(bytes.array()));
-                    byte[] arrayHeader = bytes.array();
-                    bytes.clear();
-
-                    bytes = ByteBuffer.allocate(8);
-                    bytes.order(ByteOrder.LITTLE_ENDIAN);
-                    Log.v("LOGER", Utils.byteArrayToHex(bytes.array()));
-                    byte[] arrayAuth = bytes.array();
-                    bytes.clear();
-
-                    bytes = ByteBuffer.allocate(8);
-                    bytes.putLong(System.currentTimeMillis() / 1000L);
-                    Log.v("LOGER", Utils.byteArrayToHex(bytes.array()));
-                    byte[] arrayMessageID = bytes.array();
-                    bytes.clear();
-
-                    bytes = ByteBuffer.allocate(4);
-                    bytes.order(ByteOrder.LITTLE_ENDIAN);
-                    bytes.putInt(20);
-                    Log.v("LOGER", Utils.byteArrayToHex(bytes.array()));
-                    byte[] arrayMessageLength = bytes.array();
-                    bytes.clear();
-
-                    bytes = ByteBuffer.allocate(4);
-                    byte[] req_pq = {0x78, (byte) 0x97, 0x46, 0x60};
-                    bytes.order(ByteOrder.LITTLE_ENDIAN);
-                    bytes.put(req_pq);
-                    Log.v("LOGER", Utils.byteArrayToHex(bytes.array()));
-                    byte[] arrayReqPq = bytes.array();
-                    bytes.clear();
-
-                    bytes = ByteBuffer.allocate(16);
-                    byte[] b_nonce = new byte[16];
-                    new Random().nextBytes(b_nonce);
-                    bytes.order(ByteOrder.LITTLE_ENDIAN);
-                    Log.v("LOGER", Utils.byteArrayToHex(b_nonce));
-                    byte[] arrayNonce = bytes.array();
-                    bytes.put(b_nonce);
-                    bytes.clear();
-
-                    ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-                    outputStream.write(arrayHeader);
-                    outputStream.write(arrayAuth);
-                    outputStream.write(arrayMessageID);
-                    outputStream.write(arrayMessageLength);
-                    outputStream.write(arrayReqPq);
-                    outputStream.write(arrayNonce);
-
-                    bytes = ByteBuffer.allocate(4);
-                    CRC32 crc32 = new CRC32();
-                    crc32.update(outputStream.toByteArray(), 0, outputStream.size());
-                    bytes.order(ByteOrder.LITTLE_ENDIAN);
-                    bytes.putInt((int) crc32.getValue());
-                    Log.v("LOGER", Utils.byteArrayToHex(bytes.array()));
-                    byte[] arrayCRC32 = bytes.array();
-                    bytes.clear();
-
-                    outputStream.write(arrayCRC32);
-
-                    Log.v("LOGER", "REQ_PQ" + Utils.byteArrayToHex(outputStream.toByteArray()));
-
-
-                    //Log.v("Loger", "" + Integer.toHexString(b.length));
-                    //System.currentTimeMillis()<<32;
-                    dos.write(outputStream.toByteArray());
+                    dos.write(toServer);
                     dos.flush();
-
                     //out.println(message);
-
                 } catch (Exception e) {
                     e.printStackTrace();
                     while (running.getStatus().equals(AsyncTask.Status.RUNNING)) ;
@@ -242,8 +159,10 @@ public class TCPLink extends Service {
                 // Получаем принятое от сервера сообщение
                 //String prop = String.valueOf(mData);
                 Log.v("GET_DATA", "data: " + Utils.byteArrayToHex(mData));
+                Parser.parseReqPqResponse(mData);
             } catch (Exception e) {
                 MTPapp.showToastMessage("Socket error: " + e.getMessage());
+                e.printStackTrace();
             }
         }
 
@@ -286,8 +205,6 @@ public class TCPLink extends Service {
             return 0;
         }
     }
-
-
 }
 
 	 
