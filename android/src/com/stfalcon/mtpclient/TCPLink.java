@@ -49,6 +49,8 @@ public class TCPLink extends Service {
 // и открываем наше сокет-соединение
     private void startService() {
 
+        Log.i("Loger", "Start Servise");
+
         binaryString = "34 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 1d 36 e8 51 14 00 00 00 78 97 46 60 04 91 61 61 8e 47 6b bd 82 3b 53 fb 09 1a 88 00 5d bc 15 65";
 
         try {
