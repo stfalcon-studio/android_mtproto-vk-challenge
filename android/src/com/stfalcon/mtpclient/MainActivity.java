@@ -1,33 +1,37 @@
 package com.stfalcon.mtpclient;
 
 import android.app.Activity;
+import android.content.Context;
+import android.content.Intent;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
 import android.view.View;
 import android.widget.Button;
-import android.widget.ListView;
 
 
 public class MainActivity extends Activity {
 
-	@Override
-	protected void onCreate(Bundle savedInstanceState) {
+    private Context context;
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
         setContentView(R.layout.activity_main);
-		super.onCreate(savedInstanceState);
+        super.onCreate(savedInstanceState);
     }
 
-	@Override
-	public boolean onCreateOptionsMenu(Menu menu) {
-		getMenuInflater().inflate(R.menu.main, menu);
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.main, menu);
+        context = this;
         Button startService = (Button) findViewById(R.id.start);
         Button stopService = (Button) findViewById(R.id.stop);
 
         startService.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                startService(new Intent(MainActivity.this, TCPLink.class));
+                startService(new Intent(context, TCPLink.class));
             }
         });
 
@@ -39,7 +43,7 @@ public class MainActivity extends Activity {
             }
         });
 
-		return true;
-	}
+        return true;
+    }
 
 }
