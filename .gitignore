@@ -12,6 +12,7 @@
 # generated files
 android/bin/
 android/gen/
+gen/
 key/
 
 # Local configuration file (sdk path,  etc)

@@ -1,4 +1,4 @@
-package com.stfalcon.sendfoto;
+package com.stfalcon.mtpclient;
 
 
 import android.app.Service;
