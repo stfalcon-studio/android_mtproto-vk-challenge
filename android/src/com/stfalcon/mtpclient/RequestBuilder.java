@@ -6,7 +6,7 @@ import java.util.Random;
 /**
  * Created by user on 7/22/13.
  */
-public class Data {
+public class RequestBuilder {
 
 
 }
