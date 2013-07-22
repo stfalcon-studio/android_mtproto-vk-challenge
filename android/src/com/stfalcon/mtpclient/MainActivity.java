@@ -1,6 +1,7 @@
 package com.stfalcon.mtpclient;
 
 import android.app.Activity;
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.View;
@@ -25,14 +26,14 @@ public class MainActivity extends Activity {
         startService.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-
+                startService(new Intent(MainActivity.this, TCPLink.class));
             }
         });
 
         stopService.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-
+                stopService(new Intent(MainActivity.this, TCPLink.class));
             }
         });
 
