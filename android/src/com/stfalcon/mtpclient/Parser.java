@@ -11,6 +11,22 @@ import java.nio.ByteOrder;
  */
 public class Parser {
 
+    public static void reverse(byte[] array) {
+        if (array == null) {
+            return;
+        }
+        int i = 0;
+        int j = array.length - 1;
+        byte tmp;
+        while (j > i) {
+            tmp = array[j];
+            array[j] = array[i];
+            array[i] = tmp;
+            j--;
+            i++;
+        }
+    }
+
     public static void parseReqPqResponse(byte[] response) {
         try {
 
@@ -29,8 +45,8 @@ public class Parser {
             ByteBuffer.wrap(response, 32, 16).get(nonce);
             byte[] server_nonce = new byte[16];
             ByteBuffer.wrap(response, 48, server_nonce.length).get(server_nonce);
-            byte[] pq = new byte[12];
-            ByteBuffer.wrap(response, 64, pq.length).get(pq);
+            byte[] pq = new byte[8];
+            ByteBuffer.wrap(response, 65, pq.length).get(pq);
             Log.v("PARSER", "AUTH: " + auth_key);
             Log.v("PARSER", "Message ID: " + message_id);
             Log.v("PARSER", "message_length: " + message_length);
@@ -45,9 +61,9 @@ public class Parser {
             BigInteger bigInteger = new BigInteger(pq);
             BigIntegerMath bigIntegerMath = new BigIntegerMath();
             bigIntegerMath.factor(bigInteger);
-            Log.v("PARSER", bigInteger.toString());
-            Log.v("PARSER", bigIntegerMath.getfactors());
-
+            BigInteger[] pq_result = bigIntegerMath.getfactors();
+            Log.v("PARSER", "P: " + pq_result[0]);
+            Log.v("PARSER", "Q: " + pq_result[1]);
             Log.v("PARSER", "VECTOR_LONG: " + vector_long);
             Log.v("PARSER", "COUNT: " + count);
             Log.v("PARSER", "finger_prints: " + Utils.byteArrayToHex(finger_prints));

@@ -4,7 +4,6 @@ import android.util.Log;
 
 import java.math.BigInteger;
 import java.security.SecureRandom;
-import java.util.Iterator;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
@@ -57,17 +56,14 @@ class BigIntegerMath {
         factors.clear();
     }
 
-    public String getfactors() {
-        String ret = new String();
-
-        Set<BigInteger> s = factors.keySet();
-        Iterator<BigInteger> i = s.iterator();
-        while (i.hasNext()) {
-            BigInteger b = i.next();
-            ret = ret + b.toString() + " ^ ";
-            ret = ret + factors.get(b) + "\n";
+    public BigInteger[] getfactors() {
+        try {
+            Set<BigInteger> s = factors.keySet();
+            BigInteger[] res = new BigInteger[s.size()];
+            return s.toArray(res);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
         }
-
-        return ret;
     }
 }
