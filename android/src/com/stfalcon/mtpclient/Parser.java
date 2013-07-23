@@ -24,6 +24,7 @@ public class Parser {
     public static final String VECTOR_LONG = "vector_long";
     public static final String COUNT = "count";
     public static final String FINGER_PRINTS ="finger_prints";
+    
 
     public static void reverse(byte[] array) {
         if (array == null) {
