@@ -5,6 +5,7 @@ import android.util.Log;
 import java.io.ByteArrayOutputStream;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+import java.util.HashMap;
 import java.util.Random;
 import java.util.zip.CRC32;
 
@@ -106,6 +107,81 @@ public class RequestBuilder {
         byte[] arrayCRC32 = bytes.array();
         bytes.clear();
         return arrayCRC32;
+    }
+
+
+    public static byte[] createReq_DHRequest(HashMap<String, Object> hashMap) {
+        try {
+            //Req_DH
+            ByteBuffer bytes = ByteBuffer.allocate(4);
+            byte[] req_dh = {(byte) 0xbe, (byte) 0xe4, 0x12,(byte) 0xd7};
+            bytes.order(ByteOrder.LITTLE_ENDIAN);
+            bytes.put(req_dh);
+            byte[] arrayReqDH = bytes.array();
+            bytes.clear();
+
+            //Nonce
+            bytes = ByteBuffer.allocate(16);
+            bytes.order(ByteOrder.LITTLE_ENDIAN);
+            byte[] arrayNonce = bytes.array();
+            bytes.put((byte[])hashMap.get(Parser.NONCE));
+            bytes.clear();
+
+            //Server_nonce
+            bytes = ByteBuffer.allocate(16);
+            bytes.order(ByteOrder.LITTLE_ENDIAN);
+            byte[] arrayServerNonce = bytes.array();
+            bytes.put((byte[])hashMap.get(Parser.SERVER_NONCE));
+            bytes.clear();
+
+            //P
+            bytes = ByteBuffer.allocate(12);
+            bytes.put((byte[])hashMap.get(Parser.P));
+            bytes.clear();
+
+            //G
+            bytes = ByteBuffer.allocate(12);
+            bytes.put((byte[])hashMap.get(Parser.Q));
+            bytes.clear();
+
+            //AUTH_KEY ()
+            bytes = ByteBuffer.allocate(8);
+            bytes.order(ByteOrder.LITTLE_ENDIAN);
+            byte[] arrayAuth = bytes.array();
+            bytes.clear();
+
+            //MessageID
+            bytes = ByteBuffer.allocate(8);
+            bytes.putLong(System.currentTimeMillis() / 1000L);
+            byte[] arrayMessageID = bytes.array();
+            bytes.clear();
+
+            //MessageLength
+            bytes = ByteBuffer.allocate(4);
+            bytes.order(ByteOrder.LITTLE_ENDIAN);
+            bytes.putInt(320);
+            byte[] arrayMessageLength = bytes.array();
+            bytes.clear();
+
+            ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+            outputStream.write(arrayAuth);
+            outputStream.write(arrayMessageID);
+            outputStream.write(arrayMessageLength);
+            outputStream.write(arrayReqDH);
+            outputStream.write(arrayNonce);
+            outputStream.write(arrayServerNonce);
+            byte[] arrayBodyMessage = outputStream.toByteArray();
+            outputStream.flush();
+            outputStream.close();
+            ByteArrayOutputStream resultStreem = new ByteArrayOutputStream();
+            resultStreem.write(createHeader(arrayBodyMessage.length));
+            resultStreem.write(arrayBodyMessage);
+            resultStreem.write(createCRC32(resultStreem.toByteArray()));
+            return resultStreem.toByteArray();
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
     }
 
 
