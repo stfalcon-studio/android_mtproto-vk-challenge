@@ -74,14 +74,15 @@ public class TCPLink extends Service {
 
     public void sendReq_DH_params(HashMap<String, Object> hashMap) {
         try {
-
+            Log.v("LOGER", "START");
             // PutData - это класс, с помощью которого мы передадим параметры в
             // создаваемый поток
             PutData data = new PutData();
-            data.request = RequestBuilder.createReq_PqRequest();
+            data.request = RequestBuilder.createReq_DHRequest(hashMap);
             data.context = this;
             // создаем новый поток для сокет-соединения
             new ToSocket().execute(data);
+            Log.v("LOGER", "START EXE");
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -171,13 +172,20 @@ public class TCPLink extends Service {
         Context mCtx;
         byte[] mData;
         Socket mySock;
+        int z = 0;
 
         protected void onProgressUpdate(Integer... progress) {
             try {
                 // Получаем принятое от сервера сообщение
                 //String prop = String.valueOf(mData);
                 Log.v("GET_DATA", "data: " + Utils.byteArrayToHex(mData));
-                EncryptData.RSAEncrypt(EncryptData.getDataWithHash(RequestBuilder.createP_Q_inner_data(Parser.parseReqPqResponse(mData))));
+                HashMap<String, Object> responseMap = Parser.parseReqPqResponse(mData);
+                if ((Integer) responseMap.get(Parser.TYPE) == Parser.TYPE_RES_PQ) {
+                    sendReq_DH_params(responseMap);
+
+                } else {
+                    z = 1;
+                }
 
             } catch (Exception e) {
                 MTPapp.showToastMessage("Socket error: " + e.getMessage());
@@ -207,7 +215,7 @@ public class TCPLink extends Service {
                 // Принимаем сообщение от сервера
                 // Данный цикл будет работать, пока соединение не оборвется
                 // или внешний поток не скажет данному cancel()
-                while (((read = reader.read(mData)) >= 0 && !isCancelled())) {
+                while (((read = reader.read(mData)) >= 0 && !isCancelled() && z == 0)) {
                     // "Вызываем" onProgressUpdate каждый раз, когда принято сообщение
                     Log.v("GET_DATA", "read data");
                     //read = reader.read(mData);

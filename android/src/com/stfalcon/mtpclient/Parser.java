@@ -32,7 +32,7 @@ public class Parser {
     public static HashMap<String, Object> parseReqPqResponse(byte[] response) {
 
         try {
-            HashMap<String,Object> result = new HashMap<String,Object>();
+            HashMap<String, Object> result = new HashMap<String, Object>();
             ByteBuffer buffer = ByteBuffer.wrap(response, 0, 4);
             buffer.order(ByteOrder.LITTLE_ENDIAN);
             int header_message_length = buffer.getInt();
@@ -76,13 +76,13 @@ public class Parser {
                         byte[] finger_prints = new byte[8];
                         ByteBuffer.wrap(response, 84, finger_prints.length).get(finger_prints);
                         byte[] PQ = new byte[8];
-                        ByteBuffer.wrap(response, 65, pq.length).get(pq);
-                        BigInteger bigInteger = new BigInteger(pq);
+                        ByteBuffer.wrap(response, 65, pq.length).get(PQ);
+                        BigInteger bigInteger = new BigInteger(PQ);
                         BigIntegerMath bigIntegerMath = new BigIntegerMath();
                         bigIntegerMath.factor(bigInteger);
                         BigInteger[] pq_result = bigIntegerMath.getfactors();
-                        result.put(Parser.P, pq_result[0]);
-                        result.put(Parser.Q, pq_result[1]);
+                        result.put(Parser.P, pq_result[0].longValue());
+                        result.put(Parser.Q, pq_result[1].longValue());
                         result.put(Parser.VECTOR_LONG, vector_long);
                         result.put(Parser.COUNT, count);
                         result.put(Parser.FINGER_PRINTS, finger_prints);
@@ -115,7 +115,7 @@ public class Parser {
                         Log.v("PARSER", "NONCE: " + Utils.byteArrayToHex(nonce));
                         Log.v("PARSER", "Server_NONCE: " + Utils.byteArrayToHex(server_nonce));
                         byte[] enc_ansver = new byte[596];
-                        ByteBuffer.wrap(response, 56, enc_ansver.length).get(enc_ansver);
+                        ByteBuffer.wrap(response, 64, enc_ansver.length).get(enc_ansver);
                         result.put(Parser.ENC_ANSWER, enc_ansver);
                         Log.v("PARSER", "finger_prints: " + Utils.byteArrayToHex(enc_ansver));
 
