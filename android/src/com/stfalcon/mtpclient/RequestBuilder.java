@@ -1,8 +1,7 @@
 package com.stfalcon.mtpclient;
 
-import android.util.Log;
-
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.HashMap;
@@ -107,6 +106,75 @@ public class RequestBuilder {
         byte[] arrayCRC32 = bytes.array();
         bytes.clear();
         return arrayCRC32;
+    }
+
+    public static byte[] createP_Q_inner_data(HashMap<String, Object> hashMap) {
+        try {
+            //Req_Pq
+            ByteBuffer bytes = ByteBuffer.allocate(4);
+            byte[] p_q_inner_data = {(byte) 0x83, (byte) 0xc9, (byte) 0x5a, (byte) 0xec};
+            Utils.reverseArray(p_q_inner_data);
+            bytes.order(ByteOrder.LITTLE_ENDIAN);
+            bytes.put(p_q_inner_data);
+            byte[] arrayReqPq = bytes.array();
+            bytes.clear();
+
+            bytes = ByteBuffer.allocate(12);
+            byte[] pq = (byte[]) hashMap.get(Parser.PQ);
+            //bytes.order(ByteOrder.LITTLE_ENDIAN);
+            bytes.put(pq);
+            byte[] arrayPQ = bytes.array();
+            bytes.clear();
+
+            bytes = ByteBuffer.allocate(8);
+            long p = (Long) hashMap.get(Parser.P);
+            //bytes.order(ByteOrder.LITTLE_ENDIAN);
+            bytes.putLong(p);
+            byte[] array_p = bytes.array();
+            bytes.clear();
+
+            bytes = ByteBuffer.allocate(8);
+            long q = (Long) hashMap.get(Parser.Q);
+            //bytes.order(ByteOrder.LITTLE_ENDIAN);
+            bytes.putLong(q);
+            byte[] array_q = bytes.array();
+            bytes.clear();
+
+            bytes = ByteBuffer.allocate(16);
+            byte[] nonce = (byte[]) hashMap.get(Parser.NONCE);
+            bytes.put(nonce);
+            byte[] arrayNonce = bytes.array();
+            bytes.clear();
+
+            bytes = ByteBuffer.allocate(16);
+            byte[] server_nonce = (byte[]) hashMap.get(Parser.SERVER_NONCE);
+            bytes.put(server_nonce);
+            byte[] arrayServerNonce = bytes.array();
+            bytes.clear();
+
+            //Nonce
+            bytes = ByteBuffer.allocate(32);
+            byte[] b_nonce = new byte[32];
+            new Random().nextBytes(b_nonce);
+            bytes.order(ByteOrder.LITTLE_ENDIAN);
+            byte[] arrayNewNonce = bytes.array();
+            bytes.put(b_nonce);
+            bytes.clear();
+
+            ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+            outputStream.write(arrayReqPq);
+            outputStream.write(arrayPQ);
+            outputStream.write(array_p);
+            outputStream.write(array_q);
+            outputStream.write(arrayNonce);
+            outputStream.write(arrayServerNonce);
+            outputStream.write(arrayNewNonce);
+
+            return outputStream.toByteArray();
+        } catch (IOException e) {
+            e.printStackTrace();
+            return null;
+        }
     }
 
 

@@ -29,26 +29,10 @@ public class Parser {
     public static final int TYPE_RES_PQ = 1663309317;
     public static final int TYPE_RES_DH = 1544022224;
 
-    public static void reverse(byte[] array) {
-        if (array == null) {
-            return;
-        }
-        int i = 0;
-        int j = array.length - 1;
-        byte tmp;
-        while (j > i) {
-            tmp = array[j];
-            array[j] = array[i];
-            array[i] = tmp;
-            j--;
-            i++;
-        }
-    }
-
     public static HashMap<String, Object> parseReqPqResponse(byte[] response) {
 
         try {
-            HashMap<String, Object> result = new HashMap<String, Object>();
+            HashMap<String,Object> result = new HashMap<String,Object>();
             ByteBuffer buffer = ByteBuffer.wrap(response, 0, 4);
             buffer.order(ByteOrder.LITTLE_ENDIAN);
             int header_message_length = buffer.getInt();
