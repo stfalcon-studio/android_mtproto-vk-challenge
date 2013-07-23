@@ -203,13 +203,27 @@ public class RequestBuilder {
             bytes.clear();
 
             //P
-            bytes = ByteBuffer.allocate(12);
+            bytes = ByteBuffer.allocate(8);
+            byte[] P = bytes.array();
             bytes.put((byte[])hashMap.get(Parser.P));
             bytes.clear();
 
-            //G
-            bytes = ByteBuffer.allocate(12);
+            //Q
+            bytes = ByteBuffer.allocate(8);
+            byte[] Q = bytes.array();
             bytes.put((byte[])hashMap.get(Parser.Q));
+            bytes.clear();
+
+            //Public_key_fingerprint
+            bytes = ByteBuffer.allocate(8);
+            byte[] Public_key_fingerprint = bytes.array();
+            bytes.put((byte[])hashMap.get(Parser.FINGER_PRINTS));
+            bytes.clear();
+
+            //Encrypted_data
+            bytes = ByteBuffer.allocate(260);
+            byte[] encrypted_data = bytes.array();
+            bytes.put(createP_Q_inner_data(hashMap));
             bytes.clear();
 
             //AUTH_KEY ()
@@ -238,6 +252,10 @@ public class RequestBuilder {
             outputStream.write(arrayReqDH);
             outputStream.write(arrayNonce);
             outputStream.write(arrayServerNonce);
+            outputStream.write(P);
+            outputStream.write(Q);
+            outputStream.write(Public_key_fingerprint);
+            outputStream.write(encrypted_data);
             byte[] arrayBodyMessage = outputStream.toByteArray();
             outputStream.flush();
             outputStream.close();
