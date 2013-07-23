@@ -24,6 +24,7 @@ public class Parser {
     public static final String VECTOR_LONG = "vector_long";
     public static final String COUNT = "count";
     public static final String FINGER_PRINTS = "finger_prints";
+    public static final String ENC_ANSWER = "encrypted_answer";
     public static final int TYPE_RES_PQ = 1663309317;
     public static final int TYPE_RES_DH = 1544022224;
 
@@ -63,7 +64,7 @@ public class Parser {
 
             switch (number_res_pq) {
                 case TYPE_RES_PQ:
-
+                    try {
                     byte[] nonce = new byte[16];
                     ByteBuffer.wrap(response, 32, 16).get(nonce);
                     byte[] server_nonce = new byte[16];
@@ -104,10 +105,32 @@ public class Parser {
                     Log.v("PARSER", "VECTOR_LONG: " + vector_long);
                     Log.v("PARSER", "COUNT: " + count);
                     Log.v("PARSER", "finger_prints: " + Utils.byteArrayToHex(finger_prints));
-
+                    } catch (Exception e) {e.printStackTrace();}
                     break;
                 case TYPE_RES_DH:
+                    try {
+                    byte[] nonce = new byte[16];
+                    ByteBuffer.wrap(response, 32, 16).get(nonce);
+                    byte[] server_nonce = new byte[16];
+                    ByteBuffer.wrap(response, 48, server_nonce.length).get(server_nonce);
+                    result.put(Parser.AUTH, auth_key);
+                    result.put(Parser.MESSAGE_ID, message_id);
+                    result.put(Parser.MESSAGE_LENGTH, message_length);
+                    result.put(Parser.RES_PQ, res_pq);
+                    result.put(Parser.NONCE, nonce);
+                    result.put(Parser.SERVER_NONCE, server_nonce);
+                    Log.v("PARSER", "AUTH: " + auth_key);
+                    Log.v("PARSER", "Message ID: " + message_id);
+                    Log.v("PARSER", "message_length: " + message_length);
+                    Log.v("PARSER", "RES_PQ: " + res_pq);
+                    Log.v("PARSER", "NONCE: " + Utils.byteArrayToHex(nonce));
+                    Log.v("PARSER", "Server_NONCE: " + Utils.byteArrayToHex(server_nonce));
+                    byte[] enc_ansver = new byte[596];
+                    ByteBuffer.wrap(response, 56, enc_ansver.length).get(enc_ansver);
+                    result.put(Parser.ENC_ANSWER, enc_ansver);
+                    Log.v("PARSER", "finger_prints: " + Utils.byteArrayToHex(enc_ansver));
 
+                    } catch (Exception e) {e.printStackTrace();}
                     break;
 
                 default:
