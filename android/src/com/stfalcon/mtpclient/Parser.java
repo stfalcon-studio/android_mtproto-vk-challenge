@@ -5,14 +5,31 @@ import android.util.Log;
 import java.math.BigInteger;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+import java.util.HashMap;
 
 /**
  * Created by user on 7/22/13.
  */
 public class Parser {
 
-    public static void parseReqPqResponse(byte[] response) {
+
+    public static final String AUTH = "auth_key";
+    public static final String MESSAGE_ID = "message_id";
+    public static final String MESSAGE_LENGTH = "message_length";
+    public static final String RES_PQ = "res_pq";
+    public static final String NONCE = "nonce";
+    public static final String SERVER_NONCE = "server_nonce";
+    public static final String PQ = "pq";
+    public static final String P = "p";
+    public static final String Q = "q";
+    public static final String VECTOR_LONG = "vector_long";
+    public static final String COUNT = "count";
+    public static final String FINGER_PRINTS = "finger_prints";
+
+    public static HashMap<String, Object> parseReqPqResponse(byte[] response) {
+
         try {
+            HashMap<String, Object> result = new HashMap<String, Object>();
             ByteBuffer buffer = ByteBuffer.wrap(response, 0, 4);
             buffer.order(ByteOrder.LITTLE_ENDIAN);
             int header_message_length = buffer.getInt();
@@ -28,8 +45,15 @@ public class Parser {
             ByteBuffer.wrap(response, 32, 16).get(nonce);
             byte[] server_nonce = new byte[16];
             ByteBuffer.wrap(response, 48, server_nonce.length).get(server_nonce);
-            byte[] pq = new byte[8];
-            ByteBuffer.wrap(response, 65, pq.length).get(pq);
+            byte[] pq = new byte[12];
+            ByteBuffer.wrap(response, 64, pq.length).get(pq);
+            result.put(Parser.AUTH, auth_key);
+            result.put(Parser.MESSAGE_ID, message_id);
+            result.put(Parser.MESSAGE_LENGTH, message_length);
+            result.put(Parser.RES_PQ, res_pq);
+            result.put(Parser.NONCE, nonce);
+            result.put(Parser.SERVER_NONCE, server_nonce);
+            result.put(Parser.PQ, pq);
             Log.v("PARSER", "AUTH: " + auth_key);
             Log.v("PARSER", "Message ID: " + message_id);
             Log.v("PARSER", "message_length: " + message_length);
@@ -41,18 +65,28 @@ public class Parser {
             long count = ByteBuffer.wrap(message, 80, 4).order(ByteOrder.LITTLE_ENDIAN).getInt();
             byte[] finger_prints = new byte[8];
             ByteBuffer.wrap(response, 84, finger_prints.length).get(finger_prints);
-            BigInteger bigInteger = new BigInteger(pq);
+            byte[] PQ = new byte[8];
+            ByteBuffer.wrap(response, 65, PQ.length).get(PQ);
+            BigInteger bigInteger = new BigInteger(PQ);
             BigIntegerMath bigIntegerMath = new BigIntegerMath();
             bigIntegerMath.factor(bigInteger);
             BigInteger[] pq_result = bigIntegerMath.getfactors();
+            result.put(Parser.P, pq_result[0].longValue());
+            result.put(Parser.Q, pq_result[1].longValue());
+            result.put(Parser.VECTOR_LONG, vector_long);
+            result.put(Parser.COUNT, count);
+            result.put(Parser.FINGER_PRINTS, finger_prints);
             Log.v("PARSER", "P: " + pq_result[0]);
             Log.v("PARSER", "Q: " + pq_result[1]);
             Log.v("PARSER", "VECTOR_LONG: " + vector_long);
             Log.v("PARSER", "COUNT: " + count);
             Log.v("PARSER", "finger_prints: " + Utils.byteArrayToHex(finger_prints));
+            return result;
         } catch (Exception e) {
             e.printStackTrace();
+            return null;
         }
+
     }
 
     public void parseResponse() {

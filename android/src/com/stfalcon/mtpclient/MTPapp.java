@@ -8,6 +8,7 @@ import android.view.Gravity;
 import android.widget.Toast;
 
 import java.io.File;
+import java.security.Security;
 
 /**
  * Created by user on 7/19/13.
@@ -20,6 +21,7 @@ public class MTPapp extends Application {
     public void onCreate() {
         super.onCreate();
         context = this;
+        //Security.insertProviderAt(new org.spongycastle.asn1.provider.BouncyCastleProvider(), 1);
     }
 
 

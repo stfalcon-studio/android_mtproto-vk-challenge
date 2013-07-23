@@ -13,6 +13,7 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.Socket;
+import java.util.HashMap;
 
 /**
  * Created by user on 7/19/13.
@@ -71,6 +72,21 @@ public class TCPLink extends Service {
         }
     }
 
+    public void sendReq_DH_params(HashMap<String, Object> hashMap) {
+        try {
+
+            // PutData - это класс, с помощью которого мы передадим параметры в
+            // создаваемый поток
+            PutData data = new PutData();
+            data.request = RequestBuilder.createReq_PqRequest();
+            data.context = this;
+            // создаем новый поток для сокет-соединения
+            new ToSocket().execute(data);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
     class PutData {
         byte[] request;
         Context context;
@@ -103,7 +119,9 @@ public class TCPLink extends Service {
             try {
                 // while (true) {
                 serverAddr = InetAddress.getByName(HOST);
-                mySock = new Socket(serverAddr, 80);
+                if (mySock == null || mySock.isClosed()) {
+                    mySock = new Socket(serverAddr, 80);
+                }
 
                 // открываем сокет-соединение
                 SocketData data = new SocketData();
@@ -159,7 +177,8 @@ public class TCPLink extends Service {
                 // Получаем принятое от сервера сообщение
                 //String prop = String.valueOf(mData);
                 Log.v("GET_DATA", "data: " + Utils.byteArrayToHex(mData));
-                Parser.parseReqPqResponse(mData);
+                EncryptData.RSAEncrypt(EncryptData.getDataWithHash(RequestBuilder.createP_Q_inner_data(Parser.parseReqPqResponse(mData))));
+
             } catch (Exception e) {
                 MTPapp.showToastMessage("Socket error: " + e.getMessage());
                 e.printStackTrace();

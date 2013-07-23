@@ -120,34 +120,34 @@ public class RequestBuilder {
             bytes.clear();
 
             bytes = ByteBuffer.allocate(12);
-            byte[] pq = (byte[]) hashMap.get("pq");
+            byte[] pq = (byte[]) hashMap.get(Parser.PQ);
             //bytes.order(ByteOrder.LITTLE_ENDIAN);
             bytes.put(pq);
             byte[] arrayPQ = bytes.array();
             bytes.clear();
 
             bytes = ByteBuffer.allocate(8);
-            long p = (Long) hashMap.get("p");
+            long p = (Long) hashMap.get(Parser.P);
             //bytes.order(ByteOrder.LITTLE_ENDIAN);
             bytes.putLong(p);
             byte[] array_p = bytes.array();
             bytes.clear();
 
             bytes = ByteBuffer.allocate(8);
-            long q = (Long) hashMap.get("q");
+            long q = (Long) hashMap.get(Parser.Q);
             //bytes.order(ByteOrder.LITTLE_ENDIAN);
             bytes.putLong(q);
             byte[] array_q = bytes.array();
             bytes.clear();
 
             bytes = ByteBuffer.allocate(16);
-            byte[] nonce = (byte[]) hashMap.get("nonce");
+            byte[] nonce = (byte[]) hashMap.get(Parser.NONCE);
             bytes.put(nonce);
             byte[] arrayNonce = bytes.array();
             bytes.clear();
 
             bytes = ByteBuffer.allocate(16);
-            byte[] server_nonce = (byte[]) hashMap.get("server_nonce");
+            byte[] server_nonce = (byte[]) hashMap.get(Parser.SERVER_NONCE);
             bytes.put(server_nonce);
             byte[] arrayServerNonce = bytes.array();
             bytes.clear();
