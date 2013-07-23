@@ -12,6 +12,7 @@ import java.util.HashMap;
  */
 public class Parser {
 
+    public static final String TYPE = "type";
     public static final String AUTH = "auth_key";
     public static final String MESSAGE_ID = "message_id";
     public static final String MESSAGE_LENGTH = "message_length";
@@ -65,72 +66,78 @@ public class Parser {
             switch (number_res_pq) {
                 case TYPE_RES_PQ:
                     try {
-                    byte[] nonce = new byte[16];
-                    ByteBuffer.wrap(response, 32, 16).get(nonce);
-                    byte[] server_nonce = new byte[16];
-                    ByteBuffer.wrap(response, 48, server_nonce.length).get(server_nonce);
-                    byte[] pq = new byte[12];
-                    ByteBuffer.wrap(response, 64, pq.length).get(pq);
-                    result.put(Parser.AUTH, auth_key);
-                    result.put(Parser.MESSAGE_ID, message_id);
-                    result.put(Parser.MESSAGE_LENGTH, message_length);
-                    result.put(Parser.RES_PQ, res_pq);
-                    result.put(Parser.NONCE, nonce);
-                    result.put(Parser.SERVER_NONCE, server_nonce);
-                    result.put(Parser.PQ, pq);
-                    Log.v("PARSER", "AUTH: " + auth_key);
-                    Log.v("PARSER", "Message ID: " + message_id);
-                    Log.v("PARSER", "message_length: " + message_length);
-                    Log.v("PARSER", "RES_PQ: " + res_pq);
-                    Log.v("PARSER", "NONCE: " + Utils.byteArrayToHex(nonce));
-                    Log.v("PARSER", "Server_NONCE: " + Utils.byteArrayToHex(server_nonce));
-                    Log.v("PARSER", "PQ: " + Utils.byteArrayToHex(pq));
-                    long vector_long = ByteBuffer.wrap(message, 76, 4).order(ByteOrder.BIG_ENDIAN).getInt();
-                    long count = ByteBuffer.wrap(message, 80, 4).order(ByteOrder.LITTLE_ENDIAN).getInt();
-                    byte[] finger_prints = new byte[8];
-                    ByteBuffer.wrap(response, 84, finger_prints.length).get(finger_prints);
-                    byte[] PQ = new byte[8];
-                    ByteBuffer.wrap(response, 65, pq.length).get(pq);
-                    BigInteger bigInteger = new BigInteger(pq);
-                    BigIntegerMath bigIntegerMath = new BigIntegerMath();
-                    bigIntegerMath.factor(bigInteger);
-                    BigInteger[] pq_result = bigIntegerMath.getfactors();
-                    result.put(Parser.P, pq_result[0]);
-                    result.put(Parser.Q, pq_result[1]);
-                    result.put(Parser.VECTOR_LONG, vector_long);
-                    result.put(Parser.COUNT, count);
-                    result.put(Parser.FINGER_PRINTS, finger_prints);
-                    Log.v("PARSER", "P: " + pq_result[0]);
-                    Log.v("PARSER", "Q: " + pq_result[1]);
-                    Log.v("PARSER", "VECTOR_LONG: " + vector_long);
-                    Log.v("PARSER", "COUNT: " + count);
-                    Log.v("PARSER", "finger_prints: " + Utils.byteArrayToHex(finger_prints));
-                    } catch (Exception e) {e.printStackTrace();}
+                        byte[] nonce = new byte[16];
+                        ByteBuffer.wrap(response, 32, 16).get(nonce);
+                        byte[] server_nonce = new byte[16];
+                        ByteBuffer.wrap(response, 48, server_nonce.length).get(server_nonce);
+                        byte[] pq = new byte[12];
+                        ByteBuffer.wrap(response, 64, pq.length).get(pq);
+                        result.put(Parser.TYPE, TYPE_RES_PQ);
+                        result.put(Parser.AUTH, auth_key);
+                        result.put(Parser.MESSAGE_ID, message_id);
+                        result.put(Parser.MESSAGE_LENGTH, message_length);
+                        result.put(Parser.RES_PQ, res_pq);
+                        result.put(Parser.NONCE, nonce);
+                        result.put(Parser.SERVER_NONCE, server_nonce);
+                        result.put(Parser.PQ, pq);
+                        Log.v("PARSER", "AUTH: " + auth_key);
+                        Log.v("PARSER", "Message ID: " + message_id);
+                        Log.v("PARSER", "message_length: " + message_length);
+                        Log.v("PARSER", "RES_PQ: " + res_pq);
+                        Log.v("PARSER", "NONCE: " + Utils.byteArrayToHex(nonce));
+                        Log.v("PARSER", "Server_NONCE: " + Utils.byteArrayToHex(server_nonce));
+                        Log.v("PARSER", "PQ: " + Utils.byteArrayToHex(pq));
+                        long vector_long = ByteBuffer.wrap(message, 76, 4).order(ByteOrder.BIG_ENDIAN).getInt();
+                        long count = ByteBuffer.wrap(message, 80, 4).order(ByteOrder.LITTLE_ENDIAN).getInt();
+                        byte[] finger_prints = new byte[8];
+                        ByteBuffer.wrap(response, 84, finger_prints.length).get(finger_prints);
+                        byte[] PQ = new byte[8];
+                        ByteBuffer.wrap(response, 65, pq.length).get(pq);
+                        BigInteger bigInteger = new BigInteger(pq);
+                        BigIntegerMath bigIntegerMath = new BigIntegerMath();
+                        bigIntegerMath.factor(bigInteger);
+                        BigInteger[] pq_result = bigIntegerMath.getfactors();
+                        result.put(Parser.P, pq_result[0]);
+                        result.put(Parser.Q, pq_result[1]);
+                        result.put(Parser.VECTOR_LONG, vector_long);
+                        result.put(Parser.COUNT, count);
+                        result.put(Parser.FINGER_PRINTS, finger_prints);
+                        Log.v("PARSER", "P: " + pq_result[0]);
+                        Log.v("PARSER", "Q: " + pq_result[1]);
+                        Log.v("PARSER", "VECTOR_LONG: " + vector_long);
+                        Log.v("PARSER", "COUNT: " + count);
+                        Log.v("PARSER", "finger_prints: " + Utils.byteArrayToHex(finger_prints));
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
                     break;
                 case TYPE_RES_DH:
                     try {
-                    byte[] nonce = new byte[16];
-                    ByteBuffer.wrap(response, 32, 16).get(nonce);
-                    byte[] server_nonce = new byte[16];
-                    ByteBuffer.wrap(response, 48, server_nonce.length).get(server_nonce);
-                    result.put(Parser.AUTH, auth_key);
-                    result.put(Parser.MESSAGE_ID, message_id);
-                    result.put(Parser.MESSAGE_LENGTH, message_length);
-                    result.put(Parser.RES_PQ, res_pq);
-                    result.put(Parser.NONCE, nonce);
-                    result.put(Parser.SERVER_NONCE, server_nonce);
-                    Log.v("PARSER", "AUTH: " + auth_key);
-                    Log.v("PARSER", "Message ID: " + message_id);
-                    Log.v("PARSER", "message_length: " + message_length);
-                    Log.v("PARSER", "RES_PQ: " + res_pq);
-                    Log.v("PARSER", "NONCE: " + Utils.byteArrayToHex(nonce));
-                    Log.v("PARSER", "Server_NONCE: " + Utils.byteArrayToHex(server_nonce));
-                    byte[] enc_ansver = new byte[596];
-                    ByteBuffer.wrap(response, 56, enc_ansver.length).get(enc_ansver);
-                    result.put(Parser.ENC_ANSWER, enc_ansver);
-                    Log.v("PARSER", "finger_prints: " + Utils.byteArrayToHex(enc_ansver));
+                        byte[] nonce = new byte[16];
+                        ByteBuffer.wrap(response, 32, 16).get(nonce);
+                        byte[] server_nonce = new byte[16];
+                        ByteBuffer.wrap(response, 48, server_nonce.length).get(server_nonce);
+                        result.put(Parser.TYPE, TYPE_RES_DH);
+                        result.put(Parser.AUTH, auth_key);
+                        result.put(Parser.MESSAGE_ID, message_id);
+                        result.put(Parser.MESSAGE_LENGTH, message_length);
+                        result.put(Parser.RES_PQ, res_pq);
+                        result.put(Parser.NONCE, nonce);
+                        result.put(Parser.SERVER_NONCE, server_nonce);
+                        Log.v("PARSER", "AUTH: " + auth_key);
+                        Log.v("PARSER", "Message ID: " + message_id);
+                        Log.v("PARSER", "message_length: " + message_length);
+                        Log.v("PARSER", "RES_PQ: " + res_pq);
+                        Log.v("PARSER", "NONCE: " + Utils.byteArrayToHex(nonce));
+                        Log.v("PARSER", "Server_NONCE: " + Utils.byteArrayToHex(server_nonce));
+                        byte[] enc_ansver = new byte[596];
+                        ByteBuffer.wrap(response, 56, enc_ansver.length).get(enc_ansver);
+                        result.put(Parser.ENC_ANSWER, enc_ansver);
+                        Log.v("PARSER", "finger_prints: " + Utils.byteArrayToHex(enc_ansver));
 
-                    } catch (Exception e) {e.printStackTrace();}
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
                     break;
 
                 default:
