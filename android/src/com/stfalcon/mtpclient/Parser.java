@@ -11,25 +11,8 @@ import java.nio.ByteOrder;
  */
 public class Parser {
 
-    public static void reverse(byte[] array) {
-        if (array == null) {
-            return;
-        }
-        int i = 0;
-        int j = array.length - 1;
-        byte tmp;
-        while (j > i) {
-            tmp = array[j];
-            array[j] = array[i];
-            array[i] = tmp;
-            j--;
-            i++;
-        }
-    }
-
     public static void parseReqPqResponse(byte[] response) {
         try {
-
             ByteBuffer buffer = ByteBuffer.wrap(response, 0, 4);
             buffer.order(ByteOrder.LITTLE_ENDIAN);
             int header_message_length = buffer.getInt();
@@ -70,7 +53,6 @@ public class Parser {
         } catch (Exception e) {
             e.printStackTrace();
         }
-
     }
 
     public void parseResponse() {
