@@ -47,9 +47,16 @@ public class Parser {
             int message_length = ByteBuffer.wrap(message, 24, 4).order(ByteOrder.LITTLE_ENDIAN).getInt();
             long res_pq = ByteBuffer.wrap(message, 28, 4).order(ByteOrder.BIG_ENDIAN).getInt();
 
-            int number_res_pq = ByteBuffer.wrap(message, 28, 4).order(ByteOrder.BIG_ENDIAN).getInt();
+            int number_res_pq1 = ByteBuffer.wrap(message, 28, 4).order(ByteOrder.BIG_ENDIAN).getInt();
+            int number_res_pq2 = ByteBuffer.wrap(message, 0, 4).order(ByteOrder.BIG_ENDIAN).getInt();
+            int type = 0;
+            if (number_res_pq1 == TYPE_RES_PQ || number_res_pq1 == TYPE_RES_DH) {
+                type = number_res_pq1;
+            } else {
+                type = number_res_pq2;
+            }
 
-            switch (number_res_pq) {
+            switch (type) {
                 case TYPE_RES_PQ:
                     try {
                         byte[] nonce = new byte[16];
@@ -87,17 +94,17 @@ public class Parser {
                         ByteBuffer byteBuffer = ByteBuffer.allocate(4);
                         byte[] p_arr = byteBuffer.putInt(pq_result[0].intValue()).array();
                         byteBuffer = ByteBuffer.allocate(8);
-                        byteBuffer.put((byte)0x04);
+                        byteBuffer.put((byte) 0x04);
                         byteBuffer.put(p_arr);
-                        byteBuffer.put(new byte[]{0x00,0x00,0x00});
+                        byteBuffer.put(new byte[]{0x00, 0x00, 0x00});
                         p_arr = byteBuffer.array();
 
                         byteBuffer = ByteBuffer.allocate(4);
                         byte[] q_arr = byteBuffer.putInt(pq_result[1].intValue()).array();
                         byteBuffer = ByteBuffer.allocate(8);
-                        byteBuffer.put((byte)0x04);
+                        byteBuffer.put((byte) 0x04);
                         byteBuffer.put(q_arr);
-                        byteBuffer.put(new byte[]{0x00,0x00,0x00});
+                        byteBuffer.put(new byte[]{0x00, 0x00, 0x00});
                         q_arr = byteBuffer.array();
 
                         result.put(Parser.P, p_arr);
