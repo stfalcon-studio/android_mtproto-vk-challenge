@@ -81,8 +81,25 @@ public class Parser {
                         BigIntegerMath bigIntegerMath = new BigIntegerMath();
                         bigIntegerMath.factor(bigInteger);
                         BigInteger[] pq_result = bigIntegerMath.getfactors();
-                        result.put(Parser.P, pq_result[0].longValue());
-                        result.put(Parser.Q, pq_result[1].longValue());
+
+                        ByteBuffer byteBuffer = ByteBuffer.allocate(4);
+                        byte[] p_arr = byteBuffer.putInt(pq_result[0].intValue()).array();
+                        byteBuffer = ByteBuffer.allocate(8);
+                        byteBuffer.put((byte)0x04);
+                        byteBuffer.put(p_arr);
+                        byteBuffer.put(new byte[]{0x00,0x00,0x00});
+                        p_arr = byteBuffer.array();
+
+                        byteBuffer = ByteBuffer.allocate(4);
+                        byte[] q_arr = byteBuffer.putInt(pq_result[1].intValue()).array();
+                        byteBuffer = ByteBuffer.allocate(8);
+                        byteBuffer.put((byte)0x04);
+                        byteBuffer.put(q_arr);
+                        byteBuffer.put(new byte[]{0x00,0x00,0x00});
+                        q_arr = byteBuffer.array();
+
+                        result.put(Parser.P, p_arr);
+                        result.put(Parser.Q, q_arr);
                         result.put(Parser.VECTOR_LONG, vector_long);
                         result.put(Parser.COUNT, count);
                         result.put(Parser.FINGER_PRINTS, finger_prints);
@@ -117,7 +134,7 @@ public class Parser {
                         byte[] enc_ansver = new byte[596];
                         ByteBuffer.wrap(response, 64, enc_ansver.length).get(enc_ansver);
                         result.put(Parser.ENC_ANSWER, enc_ansver);
-                        Log.v("PARSER", "finger_prints: " + Utils.byteArrayToHex(enc_ansver));
+                        Log.v("PARSER", "encrypted_answer: " + Utils.byteArrayToHex(enc_ansver));
 
                     } catch (Exception e) {
                         e.printStackTrace();

@@ -127,16 +127,12 @@ public class RequestBuilder {
             bytes.clear();
 
             bytes = ByteBuffer.allocate(8);
-            long p = (Long) hashMap.get(Parser.P);
-            //bytes.order(ByteOrder.LITTLE_ENDIAN);
-            bytes.putLong(p);
+            bytes.put((byte[]) hashMap.get(Parser.P));
             byte[] array_p = bytes.array();
             bytes.clear();
 
             bytes = ByteBuffer.allocate(8);
-            long q = (Long) hashMap.get(Parser.Q);
-            //bytes.order(ByteOrder.LITTLE_ENDIAN);
-            bytes.putLong(q);
+            bytes.put((byte[]) hashMap.get(Parser.Q));
             byte[] array_q = bytes.array();
             bytes.clear();
 
@@ -179,8 +175,28 @@ public class RequestBuilder {
 
     public static byte[] createReq_DHRequest(HashMap<String, Object> hashMap) {
         try {
+
+            //AUTH_KEY ()
+            ByteBuffer bytes = ByteBuffer.allocate(8);
+            bytes.order(ByteOrder.LITTLE_ENDIAN);
+            byte[] arrayAuth = bytes.array();
+            bytes.clear();
+
+            //MessageID
+            bytes = ByteBuffer.allocate(8);
+            byte[] arrayMessageID = bytes.array();
+            bytes.putLong(System.currentTimeMillis() / 1000L);
+            bytes.clear();
+
+            //MessageLength
+            bytes = ByteBuffer.allocate(4);
+            bytes.order(ByteOrder.LITTLE_ENDIAN);
+            byte[] arrayMessageLength = bytes.array();
+            bytes.putInt(320);
+            bytes.clear();
+
             //Req_DH
-            ByteBuffer bytes = ByteBuffer.allocate(4);
+            bytes = ByteBuffer.allocate(4);
             byte[] req_dh = {(byte) 0xbe, (byte) 0xe4, 0x12, (byte) 0xd7};
             bytes.order(ByteOrder.LITTLE_ENDIAN);
             bytes.put(req_dh);
@@ -203,13 +219,13 @@ public class RequestBuilder {
 
             //P
             bytes = ByteBuffer.allocate(8);
-            bytes.putLong((Long) hashMap.get(Parser.P));
+            bytes.put((byte[]) hashMap.get(Parser.P));
             byte[] P = bytes.array();
             bytes.clear();
 
             //Q
             bytes = ByteBuffer.allocate(8);
-            bytes.putLong((Long) hashMap.get(Parser.Q));
+            bytes.put((byte[]) hashMap.get(Parser.Q));
             byte[] Q = bytes.array();
             bytes.clear();
 
@@ -230,25 +246,6 @@ public class RequestBuilder {
             bytes = ByteBuffer.allocate(256);
             bytes.put(EncryptData.RSAEncrypt(EncryptData.getDataWithHash(RequestBuilder.createP_Q_inner_data(hashMap))));
             byte[] encrypted_data = bytes.array();
-            bytes.clear();
-
-            //AUTH_KEY ()
-            bytes = ByteBuffer.allocate(8);
-            bytes.order(ByteOrder.LITTLE_ENDIAN);
-            byte[] arrayAuth = bytes.array();
-            bytes.clear();
-
-            //MessageID
-            bytes = ByteBuffer.allocate(8);
-            byte[] arrayMessageID = bytes.array();
-            bytes.putLong(System.currentTimeMillis() / 1000L);
-            bytes.clear();
-
-            //MessageLength
-            bytes = ByteBuffer.allocate(4);
-            bytes.order(ByteOrder.LITTLE_ENDIAN);
-            byte[] arrayMessageLength = bytes.array();
-            bytes.putInt(320);
             bytes.clear();
 
             ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
