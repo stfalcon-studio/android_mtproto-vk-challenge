@@ -2,6 +2,8 @@ package com.stfalcon.mtpclient;
 
 import android.util.Log;
 
+import org.spongycastle.asn1.eac.UnsignedInteger;
+
 import java.math.BigInteger;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -27,9 +29,12 @@ public class Parser {
     public static final String COUNT = "count";
     public static final String FINGER_PRINTS = "finger_prints";
     public static final String ENC_ANSWER = "encrypted_answer";
-    public static final int TYPE_RES_PQ = 1663309317;
-    public static final int TYPE_RES_DH = 1544022224;
-    public static final int TYPE_DH_GEN_OK = 888654651;
+    public static final String GA = "g_a";
+    public static final String GB = "g_B";
+    public static final String TYPE_RES_PQ = Utils.byteArrayToHex(05162463);
+    public static final String TYPE_RES_DH = 1544022224;
+    public static final String TYPE_server_DH_inner_data = 3121449397;
+    public static final String TYPE_DH_GEN_OK = 888654651;
 
     public static HashMap<String, Object> parseReqPqResponse(byte[] response) {
 

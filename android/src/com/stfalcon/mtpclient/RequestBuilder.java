@@ -173,7 +173,7 @@ public class RequestBuilder {
         }
     }
 
-    public static byte[] create_DH_inner_data(HashMap<String, Object> hashMap) {
+    public static byte[] create_client_DH_inner_data(HashMap<String, Object> hashMap) {
         try {
             //Client_DH_inner_data
             ByteBuffer bytes = ByteBuffer.allocate(4);
