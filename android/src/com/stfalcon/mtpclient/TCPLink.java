@@ -175,6 +175,12 @@ public class TCPLink extends Service {
         int z = 0;
 
         protected void onProgressUpdate(Integer... progress) {
+
+        }
+
+        protected void onPostExecute(Integer result) {
+            // Это выполнится после завершения работы потока
+            Log.v("GET_DATA", "done");
             try {
                 // Получаем принятое от сервера сообщение
                 //String prop = String.valueOf(mData);
@@ -182,7 +188,6 @@ public class TCPLink extends Service {
                 HashMap<String, Object> responseMap = Parser.parseReqPqResponse(mData);
                 if ((Integer) responseMap.get(Parser.TYPE) == Parser.TYPE_RES_PQ) {
                     sendReq_DH_params(responseMap);
-
                 } else {
                     z = 1;
                 }
@@ -191,11 +196,6 @@ public class TCPLink extends Service {
                 MTPapp.showToastMessage("Socket error: " + e.getMessage());
                 e.printStackTrace();
             }
-        }
-
-        protected void onPostExecute(Integer result) {
-            // Это выполнится после завершения работы потока
-            Log.v("GET_DATA", "done");
         }
 
         protected void onCancelled(Integer result) {
@@ -219,7 +219,7 @@ public class TCPLink extends Service {
                     // "Вызываем" onProgressUpdate каждый раз, когда принято сообщение
                     Log.v("GET_DATA", "read data");
                     //read = reader.read(mData);
-                    if (read > 0) publishProgress(read);
+                    if (read > 0) return read;
                 }
                 reader.close();
             } catch (IOException e) {
