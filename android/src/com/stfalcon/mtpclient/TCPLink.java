@@ -201,10 +201,10 @@ public class TCPLink extends Service {
                 // Получаем принятое от сервера сообщение
                 //String prop = String.valueOf(mData);
                 Log.v("GET_DATA", "data: " + Utils.byteArrayToHex(mData));
-                HashMap<String, Object> responseMap = Parser.parseReqPqResponse(mData);
-                if ((Integer) responseMap.get(Parser.TYPE) == Parser.TYPE_RES_PQ) {
+                HashMap<String, Object> responseMap = Parser.parseResponse(mData);
+                if ((String) responseMap.get(Parser.TYPE) == Parser.TYPE_RES_PQ) {
                     sendReq_DH_params(responseMap);
-                } else if ((Integer) responseMap.get(Parser.TYPE) == Parser.TYPE_RES_DH) {
+                } else if ((String) responseMap.get(Parser.TYPE) == Parser.TYPE_RES_DH) {
                     //send(responseMap);
                 }
 
