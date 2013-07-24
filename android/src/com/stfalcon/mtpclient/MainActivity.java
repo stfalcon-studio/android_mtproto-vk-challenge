@@ -39,7 +39,7 @@ public class MainActivity extends Activity {
         stopService.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                try {
+                /*try {
                     byte[] key = EncryptData.getTmp_aes_key(Utils.hexStringToByteArray("A5CF4D33F4A11EA877BA4AA573907330"), Utils.hexStringToByteArray("311C85DB234AA2640AFC4A76A735CF5B1F0FD68BD17FA181E1229AD867CC024D"));
                     byte[] iv = EncryptData.getTmp_aes_iv(Utils.hexStringToByteArray("A5CF4D33F4A11EA877BA4AA573907330"), Utils.hexStringToByteArray("311C85DB234AA2640AFC4A76A735CF5B1F0FD68BD17FA181E1229AD867CC024D"));
                     // byte[] key = Utils.hexStringToByteArray("5468697320697320616E20696D706C65");
@@ -53,7 +53,7 @@ public class MainActivity extends Activity {
                     //Log.v("LOGER", Utils.byteArrayToHex(EncryptData.ige(key, iv, Utils.hexStringToByteArray("4C2E204C6574277320686F70652042656E20676F74206974207269676874210A"))));
                 } catch (Exception e) {
                     e.printStackTrace();
-                }
+                }*/
             }
         });
         return true;

@@ -88,6 +88,22 @@ public class TCPLink extends Service {
         }
     }
 
+    public void sendSet_DH_params(HashMap<String, Object> hashMap) {
+        try {
+            Log.v("LOGER", "START");
+            // PutData - это класс, с помощью которого мы передадим параметры в
+            // создаваемый поток
+            PutData data = new PutData();
+            data.request = RequestBuilder.create_Set_client_DHRequest(hashMap);
+            data.context = this;
+            // создаем новый поток для сокет-соединения
+            new ToSocket().execute(data);
+            Log.v("LOGER", "START EXE");
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
     class PutData {
         byte[] request;
         Context context;
@@ -188,8 +204,8 @@ public class TCPLink extends Service {
                 HashMap<String, Object> responseMap = Parser.parseReqPqResponse(mData);
                 if ((Integer) responseMap.get(Parser.TYPE) == Parser.TYPE_RES_PQ) {
                     sendReq_DH_params(responseMap);
-                } else {
-                    z = 1;
+                } else if ((Integer) responseMap.get(Parser.TYPE) == Parser.TYPE_RES_DH) {
+                    //send(responseMap);
                 }
 
             } catch (Exception e) {
