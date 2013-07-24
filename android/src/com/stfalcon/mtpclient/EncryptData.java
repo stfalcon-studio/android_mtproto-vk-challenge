@@ -13,6 +13,7 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.PublicKey;
 import java.security.spec.RSAPublicKeySpec;
+import java.util.Arrays;
 import java.util.Formatter;
 import java.util.Random;
 
@@ -20,6 +21,7 @@ import javax.crypto.BadPaddingException;
 import javax.crypto.Cipher;
 import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
+import javax.crypto.spec.SecretKeySpec;
 
 /**
  * Created by anton on 7/23/13.
@@ -90,5 +92,55 @@ public class EncryptData {
         KeyFactory kf = KeyFactory.getInstance("RSA");
         return kf.generatePublic(spec);
     }
+
+    public static byte[] getTmp_aes_iv(byte[] server_nonce, byte[] new_nonce) {
+        try {
+            byte[] tmp_aes_iv = Utils.sumByte(Utils.subByte(SHAsum(Utils.sumByte(server_nonce, new_nonce)), 12, 8),
+                    Utils.sumByte(SHAsum(Utils.sumByte(server_nonce, new_nonce)), Utils.subByte(new_nonce, 0, 4)));
+            return tmp_aes_iv;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    public static byte[] getTmp_aes_key(byte[] server_nonce, byte[] new_nonce) {
+        try {
+            byte[] tmp_aes_iv = Utils.sumByte(SHAsum(Utils.sumByte(new_nonce, server_nonce)),
+                    Utils.subByte(SHAsum(Utils.sumByte(server_nonce, new_nonce)), 0, 12));
+            return tmp_aes_iv;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    public static final byte[] ige(final byte[] key, final byte[] IV,
+                                   final byte[] Message) throws Exception {
+
+        final Cipher cipher = Cipher.getInstance("AES/ECB/NoPadding");
+        cipher.init(Cipher.DECRYPT_MODE, new SecretKeySpec(key, "AES"));
+
+        final int blocksize = cipher.getBlockSize();
+
+        byte[] xPrev = Arrays.copyOfRange(IV, 0, blocksize);
+        byte[] yPrev = Arrays.copyOfRange(IV, blocksize, IV.length);
+
+
+        byte[] decrypted = new byte[0];
+
+        byte[] y, x;
+        for (int i = 0; i < Message.length; i += blocksize) {
+            x = java.util.Arrays.copyOfRange(Message, i, i + blocksize);
+            y = Utils.xor(cipher.doFinal(Utils.xor(x, yPrev)), xPrev);
+            xPrev = x;
+            yPrev = y;
+
+            decrypted = Utils.sumByte(decrypted, y);
+        }
+
+        return decrypted;
+    }
+
 
 }

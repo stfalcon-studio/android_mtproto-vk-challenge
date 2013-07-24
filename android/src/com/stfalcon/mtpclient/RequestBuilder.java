@@ -154,6 +154,7 @@ public class RequestBuilder {
             new Random().nextBytes(b_nonce);
             bytes.order(ByteOrder.LITTLE_ENDIAN);
             byte[] arrayNewNonce = bytes.array();
+
             bytes.put(b_nonce);
             bytes.clear();
 

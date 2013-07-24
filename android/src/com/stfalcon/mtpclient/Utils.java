@@ -1,5 +1,7 @@
 package com.stfalcon.mtpclient;
 
+import java.nio.ByteBuffer;
+
 /**
  * Created by anton on 7/22/13.
  */
@@ -56,5 +58,36 @@ public class Utils {
             j--;
             i++;
         }
+    }
+
+    public static byte[] subByte(byte[] bytes, int index, int count) {
+        byte[] substr = new byte[count];
+        ByteBuffer.wrap(bytes, index, count).get(substr);
+        return substr;
+    }
+
+    public static byte[] sumByte(byte[] bytes1, byte[] bytes2) {
+        ByteBuffer byteBuffer = ByteBuffer.allocate(bytes1.length + bytes2.length);
+        byteBuffer.put(bytes1);
+        byteBuffer.put(bytes2);
+        return byteBuffer.array();
+    }
+
+    public static byte[] hexStringToByteArray(String s) {
+        int len = s.length();
+        byte[] data = new byte[len / 2];
+        for (int i = 0; i < len; i += 2) {
+            data[i / 2] = (byte) ((Character.digit(s.charAt(i), 16) << 4)
+                    + Character.digit(s.charAt(i + 1), 16));
+        }
+        return data;
+    }
+
+    public static byte[] xor(byte[] array_1, byte[] array_2) {
+        int i = 0;
+        byte[] array_3 = new byte[array_1.length];
+        for (byte b : array_1)
+            array_3[i] = (byte) (b ^ array_2[i++]);
+        return array_3;
     }
 }
