@@ -19,6 +19,7 @@ public class Parser {
     public static final String RES_PQ = "res_pq";
     public static final String NONCE = "nonce";
     public static final String SERVER_NONCE = "server_nonce";
+    public static final String NEW_NONCE_HASH1 = "new_nonce_hash1";
     public static final String PQ = "pq";
     public static final String P = "p";
     public static final String Q = "q";
@@ -28,6 +29,7 @@ public class Parser {
     public static final String ENC_ANSWER = "encrypted_answer";
     public static final int TYPE_RES_PQ = 1663309317;
     public static final int TYPE_RES_DH = 1544022224;
+    public static final int TYPE_DH_GEN_OK = 888654651;
 
     public static HashMap<String, Object> parseReqPqResponse(byte[] response) {
 
@@ -135,6 +137,27 @@ public class Parser {
                         ByteBuffer.wrap(response, 64, enc_ansver.length).get(enc_ansver);
                         result.put(Parser.ENC_ANSWER, enc_ansver);
                         Log.v("PARSER", "encrypted_answer: " + Utils.byteArrayToHex(enc_ansver));
+
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                    break;
+
+                case TYPE_DH_GEN_OK:
+                    try {
+                        byte[] nonce = new byte[16];
+                        ByteBuffer.wrap(response, 4, 16).get(nonce);
+                        byte[] server_nonce = new byte[16];
+                        ByteBuffer.wrap(response, 20, server_nonce.length).get(server_nonce);
+                        byte[] new_nonce_hash1 = new byte[4];
+                        ByteBuffer.wrap(response, 36, new_nonce_hash1.length).get(new_nonce_hash1);
+                        result.put(Parser.TYPE, TYPE_RES_DH);
+                        result.put(Parser.NONCE, nonce);
+                        result.put(Parser.SERVER_NONCE, server_nonce);
+                        result.put(Parser.NEW_NONCE_HASH1, new_nonce_hash1);
+                        Log.v("PARSER", "NONCE: " + Utils.byteArrayToHex(nonce));
+                        Log.v("PARSER", "Server_NONCE: " + Utils.byteArrayToHex(server_nonce));
+                        Log.v("PARSER", "New_nonce_hash1: " + Utils.byteArrayToHex(server_nonce));
 
                     } catch (Exception e) {
                         e.printStackTrace();

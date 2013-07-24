@@ -325,7 +325,6 @@ public class RequestBuilder {
         }
     }
 
-
     public static byte[] create_Set_client_DHRequest(HashMap<String, Object> hashMap) {
         try {
 
