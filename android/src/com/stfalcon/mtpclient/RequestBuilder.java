@@ -19,11 +19,15 @@ public class RequestBuilder {
     public static byte[] B;
     public static byte[] G_A;
     public static byte[] AUTH_KEY;
+    public static byte[] AUTH_KEY_HESH;
     public static byte[] DH_PRIME;
     public static byte[] SERVER_NONCE;
     public static byte[] NONCE;
     public static byte[] AUTH_HASH;
     public static byte[] MSG_KEY;
+    public static byte[] SALT;
+    public static byte[] AES_IV;
+    public static byte[] AES_KEY;
 
     public static byte[] createReq_PqRequest() {
         try {
@@ -464,6 +468,29 @@ public class RequestBuilder {
 
     public static void saveAuthKey(HashMap<String, Object> hashMap) {
         AUTH_KEY = generateGB(new BigInteger(G_A), new BigInteger(1, DH_PRIME));
-
+        try {
+            byte[] sha1_auth_key = EncryptData.SHAsum(AUTH_KEY);
+            AUTH_KEY_HESH = Utils.subByte(sha1_auth_key,sha1_auth_key.length - 8, 8);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
+
+
+    public static void generateAES_Key(HashMap<String, Object> hashMap) {
+        SALT = Utils.xor(Utils.subByte(NEW_NONCE,0,8),Utils.subByte(SERVER_NONCE,0,8));
+        MSG_KEY = Utils.subByte(createReq_PqRequest(),createReq_PqRequest().length - 16, 16);
+        try {
+            byte[] sha1_a = EncryptData.SHAsum(Utils.sumByte(MSG_KEY, Utils.subByte(AUTH_KEY,0 ,32)));
+            byte[] sha1_b = EncryptData.SHAsum(Utils.sumByte(Utils.subByte(AUTH_KEY, 32, 16),Utils.sumByte(MSG_KEY,Utils.subByte(AUTH_KEY,48 ,16))));
+            byte[] sha1_c = EncryptData.SHAsum(Utils.sumByte(Utils.subByte(AUTH_KEY,64 , 32),MSG_KEY));
+            byte[] sha1_d = EncryptData.SHAsum(Utils.sumByte(MSG_KEY, Utils.subByte(AUTH_KEY, 96, 32)));
+            AES_KEY = Utils.sumByte(Utils.sumByte(Utils.subByte(sha1_a, 0, 8),Utils.subByte(sha1_b, 8, 12)),Utils.subByte(sha1_c,4 ,12));
+            AES_IV = Utils.sumByte(Utils.sumByte(Utils.subByte(sha1_a, 8, 12),Utils.subByte(sha1_b, 0, 8)),Utils.sumByte(Utils.subByte(sha1_c, 16, 4),Utils.subByte(sha1_d,0,8)));
+        }catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+
 }
