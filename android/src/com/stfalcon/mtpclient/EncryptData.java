@@ -29,22 +29,62 @@ import javax.crypto.spec.SecretKeySpec;
  */
 public class EncryptData {
 
-    private static String publicKeyString = //"-----BEGIN RSA PUBLIC KEY-----\n" +
-            "MIIBCgKCAQEAwVACPi9w23mF3tBkdZz+zwrzKOaaQdr01vAbU4E1pvkfj4sqDsm6" +
-                    "lyDONS789sVoD/xCS9Y0hkkC3gtL1tSfTlgCMOOul9lcixlEKzwKENj1Yz/s7daS" +
-                    "an9tqw3bfUV/nqgbhGX81v/+7RFAEd+RwFnK7a+XYl9sluzHRyVVaTTveB2GazTw" +
-                    "Efzk2DWgkBluml8OREmvfraX3bkHZJTKX4EQSjBbbdJ2ZXIsRrYOXfaA+xayEGB+" +
-                    "8hdlLmAjbCVfaigxX0CDqWeR1yFL9kwd9P0NsZRPsmoqVwMbMu7mStFai6aIhc3n" +
-                    "Slv8kg9qv1m6XHVQY3PnEw+QQtqSIXklHwIDAQAB";
-    //"-----END RSA PUBLIC KEY-----";
+    public static byte[] IGE_KEY;
+    public static byte[] IGE_IV;
+    private static String publicKeyString = "MIIBCgKCAQEAwVACPi9w23mF3tBkdZz+zwrzKOaaQdr01vAbU4E1pvkfj4sqDsm6" +
+            "lyDONS789sVoD/xCS9Y0hkkC3gtL1tSfTlgCMOOul9lcixlEKzwKENj1Yz/s7daS" +
+            "an9tqw3bfUV/nqgbhGX81v/+7RFAEd+RwFnK7a+XYl9sluzHRyVVaTTveB2GazTw" +
+            "Efzk2DWgkBluml8OREmvfraX3bkHZJTKX4EQSjBbbdJ2ZXIsRrYOXfaA+xayEGB+" +
+            "8hdlLmAjbCVfaigxX0CDqWeR1yFL9kwd9P0NsZRPsmoqVwMbMu7mStFai6aIhc3n" +
+            "Slv8kg9qv1m6XHVQY3PnEw+QQtqSIXklHwIDAQAB";
 
     public static byte[] getDataWithHash(byte[] data) {
         try {
-            byte[] data_with_hash = new byte[255];
+            byte[] data_with_hash;// = new byte[255];
             byte[] data_SHA1 = SHAsum(data);
             ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-            byte[] random_bytes = new byte[data_with_hash.length - (data.length + data_SHA1.length)];
+            int len = data.length + data_SHA1.length;
+            int ran_len = 0;
+            while (((len + ran_len) % 16) != 0) {
+                ran_len++;
+            }
+            if ((ran_len + data.length + data_SHA1.length) < 255) {
+                ran_len += 128;
+            }
+            byte[] random_bytes = new byte[ran_len-1];
             new Random().nextBytes(random_bytes);
+            Log.v("LOGER", "" + data.length);
+            Log.v("LOGER", "" + data_SHA1.length);
+            Log.v("LOGER", "" + random_bytes.length);
+            outputStream.write(data_SHA1);
+            outputStream.write(data);
+            outputStream.write(random_bytes);
+            data_with_hash = outputStream.toByteArray();
+            return data_with_hash;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    public static byte[] getDataWithHash1(byte[] data) {
+        try {
+            byte[] data_with_hash;// = new byte[255];
+            byte[] data_SHA1 = SHAsum(data);
+            ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+            int len = data.length + data_SHA1.length;
+            int ran_len = 0;
+            while (((len + ran_len) % 16) != 0) {
+                ran_len++;
+            }
+            if ((ran_len + data.length + data_SHA1.length) < 255) {
+                ran_len += 128;
+            }
+            byte[] random_bytes = new byte[ran_len-1];
+            new Random().nextBytes(random_bytes);
+            Log.v("LOGER", "" + data.length);
+            Log.v("LOGER", "" + data_SHA1.length);
+            Log.v("LOGER", "" + random_bytes.length);
             outputStream.write(data_SHA1);
             outputStream.write(data);
             outputStream.write(random_bytes);
@@ -98,6 +138,7 @@ public class EncryptData {
         try {
             byte[] tmp_aes_iv = Utils.sumByte(Utils.subByte(SHAsum(Utils.sumByte(server_nonce, new_nonce)), 12, 8),
                     Utils.sumByte(SHAsum(Utils.sumByte(new_nonce, new_nonce)), Utils.subByte(new_nonce, 0, 4)));
+            IGE_IV = tmp_aes_iv;
             return tmp_aes_iv;
         } catch (Exception e) {
             e.printStackTrace();
@@ -109,7 +150,7 @@ public class EncryptData {
         try {
             byte[] tmp_aes_key = Utils.sumByte(SHAsum(Utils.sumByte(new_nonce, server_nonce)),
                     Utils.subByte(SHAsum(Utils.sumByte(server_nonce, new_nonce)), 0, 12));
-            //Log.v("DECRYPT",Utils.byteArrayToHex(new_nonce));
+            IGE_KEY = tmp_aes_key;
             return tmp_aes_key;
         } catch (Exception e) {
             e.printStackTrace();
@@ -150,6 +191,32 @@ public class EncryptData {
         //Log.v("LOGER","key"+Utils.byteArrayToHex(key));
         //Log.v("LOGER","iv1"+Utils.byteArrayToHex(iv1));
         //Log.v("LOGER","iv2"+Utils.byteArrayToHex(iv2));
+
+        byte[] decrypted = new byte[0];
+
+        byte[] block, tmp;
+        for (int i = 0; i < Message.length; i += blocksize) {
+            block = java.util.Arrays.copyOfRange(Message, i, i + blocksize);
+            //Log.v("LOGER","block "+Utils.byteArrayToHex(block));
+            tmp = Utils.xor(cipher.doFinal(Utils.xor(block, iv2)), iv1);
+            iv1 = block;
+            iv2 = tmp;
+
+            decrypted = Utils.sumByte(decrypted, iv2);
+        }
+        return decrypted;
+    }
+
+    public static byte[] igeEncrypt(final byte[] key, final byte[] IV,
+                                    final byte[] Message) throws Exception {
+
+        final Cipher cipher = Cipher.getInstance("AES/ECB/NoPadding");
+        cipher.init(Cipher.ENCRYPT_MODE, new SecretKeySpec(key, "AES"));
+
+        final int blocksize = cipher.getBlockSize();
+
+        byte[] iv2 = Arrays.copyOfRange(IV, 0, blocksize);
+        byte[] iv1 = Arrays.copyOfRange(IV, blocksize, IV.length);
 
         byte[] decrypted = new byte[0];
 
