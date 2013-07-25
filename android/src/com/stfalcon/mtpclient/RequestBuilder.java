@@ -1,9 +1,13 @@
 package com.stfalcon.mtpclient;
 
+import android.util.Log;
+
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.math.BigInteger;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+import java.security.MessageDigest;
 import java.util.HashMap;
 import java.util.Random;
 import java.util.zip.CRC32;
@@ -406,5 +410,33 @@ public class RequestBuilder {
         }
     }
 
+    public static byte[] generateBG(BigInteger g, BigInteger dh_prime) {
+        try {
+
+            ByteBuffer bytes = ByteBuffer.allocate(256);
+            byte[] b = new byte[256];
+            new Random().nextBytes(b);
+            bytes.put(b);
+            byte[] arrayB = bytes.array();
+            Utils.reverseArray(arrayB);
+            Log.v("LOGER", "arrayB: " + Utils.byteArrayToHex(arrayB));
+
+
+            byte[] bb = Utils.hexStringToByteArray("6F620AFA575C9233EB4C014110A7BCAF49464F798A18A0981FEA1E05E8DA67D9681E0FD6DF0EDF0272AE3492451A84502F2EFC0DA18741A5FB80BD82296919A70FAA6D07CBBBCA2037EA7D3E327B61D585ED3373EE0553A91CBD29B01FA9A89D479CA53D57BDE3A76FBD922A923A0A38B922C1D0701F53FF52D7EA9217080163A64901E766EB6A0F20BC391B64B9D1DD2CD13A7D0C946A3A7DF8CEC9E2236446F646C42CFE2B60A2A8D776E56C8D7519B08B88ED0970E10D12A8C9E355D765F2B7BBB7B4CA9360083435523CB0D57D2B106FD14F94B4EEE79D8AC131CA56AD389C84FE279716F8124A543337FB9EA3D988EC5FA63D90A4BA3970E7A39E5C0DE5");
+            Utils.reverseArray(bb);
+            BigInteger bi = new BigInteger(bb);
+            Log.v("LOGER", "g: " + Utils.byteArrayToHex(g.toByteArray()));
+            Log.v("LOGER", "bi: " + Utils.byteArrayToHex(bi.toByteArray()));
+            Log.v("LOGER", "dh_prime: " + Utils.byteArrayToHex(dh_prime.toByteArray()));
+            BigInteger g_b = g.modPow(bi, dh_prime);
+
+            Log.v("LOGER", "G_b: " + Utils.byteArrayToHex(g_b.toByteArray()));
+
+
+
+        }catch (Exception e) {
+            e.printStackTrace();}
+        return null;
+    }
 
 }

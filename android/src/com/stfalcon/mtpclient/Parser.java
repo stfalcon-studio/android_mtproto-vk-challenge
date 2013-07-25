@@ -2,8 +2,6 @@ package com.stfalcon.mtpclient;
 
 import android.util.Log;
 
-import org.spongycastle.asn1.eac.UnsignedInteger;
-
 import java.math.BigInteger;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -50,9 +48,15 @@ public class Parser {
             Utils.reverseArray(code);
             String server_function = Utils.byteArrayToHex(code);
 
-            if (server_function.equals(TYPE_RES_PQ)){return parseTYPE_RES_PQ(response);}
-            if (server_function.equals(TYPE_RES_DH)){return parseTYPE_RES_DH(response);}
-            if (server_function.equals(TYPE_DH_GEN_OK)){return parseTYPE_DH_GEN_OK(response);}
+            if (server_function.equals(TYPE_RES_PQ)) {
+                return parseTYPE_RES_PQ(response);
+            }
+            if (server_function.equals(TYPE_RES_DH)) {
+                return parseTYPE_RES_DH(response);
+            }
+            if (server_function.equals(TYPE_DH_GEN_OK)) {
+                return parseTYPE_DH_GEN_OK(response);
+            }
 
 
         } catch (Exception e) {
