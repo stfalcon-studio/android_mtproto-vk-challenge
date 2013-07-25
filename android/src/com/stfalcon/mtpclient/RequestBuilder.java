@@ -7,7 +7,7 @@ import java.io.IOException;
 import java.math.BigInteger;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
-import java.security.MessageDigest;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Random;
 import java.util.zip.CRC32;
@@ -185,9 +185,8 @@ public class RequestBuilder {
         try {
             //Client_DH_inner_data
             ByteBuffer bytes = ByteBuffer.allocate(4);
-            byte[] DH_inner_data = {(byte) 0x83, (byte) 0xc9, (byte) 0x5a, (byte) 0xec};
+            byte[] DH_inner_data = {(byte) 0x66, (byte) 0x43, (byte) 0xb6, (byte) 0x54};
             Utils.reverseArray(DH_inner_data);
-            bytes.order(ByteOrder.LITTLE_ENDIAN);
             bytes.put(DH_inner_data);
             byte[] arrayDH_inner_data = bytes.array();
             bytes.clear();
@@ -207,14 +206,16 @@ public class RequestBuilder {
             bytes.clear();
 
             //Retry_id
-            bytes = ByteBuffer.allocate(32);
+            bytes = ByteBuffer.allocate(8);
             byte[] arrayRetry_id = bytes.array();
             bytes.clear();
 
             //g_b
             bytes = ByteBuffer.allocate(260);
-            byte[] g_b = (byte[]) hashMap.get(Parser.GB);//G_B
-            bytes.put(server_nonce);
+            byte[] g_b = generateGB(new BigInteger((byte[]) hashMap.get(Parser.G)), new BigInteger(1, (byte[]) hashMap.get(Parser.DH_PRIME)));//G_B
+            bytes.put(g_b);
+            Log.v("LOGER", "GB" + g_b.length + " " + Utils.byteArrayToHex(g_b));
+
             byte[] array_g_b = bytes.array();
             bytes.clear();
 
@@ -345,19 +346,20 @@ public class RequestBuilder {
             //MessageID
             bytes = ByteBuffer.allocate(8);
             byte[] arrayMessageID = bytes.array();
-            bytes.putLong(System.currentTimeMillis() / 1000L);
+            bytes.putLong(Long.reverseBytes((new Date().getTime() / 1000) << 32));
             bytes.clear();
 
             //MessageLength
             bytes = ByteBuffer.allocate(4);
             bytes.order(ByteOrder.LITTLE_ENDIAN);
             byte[] arrayMessageLength = bytes.array();
-            bytes.putInt(20);
+            bytes.putInt(376);
             bytes.clear();
 
             //client_DH
             bytes = ByteBuffer.allocate(4);
             byte[] req_dh = {(byte) 0xF5, (byte) 0x04, 0x5F, (byte) 0x1F};
+            Utils.reverseArray(req_dh);
             bytes.order(ByteOrder.LITTLE_ENDIAN);
             bytes.put(req_dh);
             byte[] arrayReqDH = bytes.array();
@@ -379,14 +381,17 @@ public class RequestBuilder {
 
             //Encrypted_data_bytes_header
             bytes = ByteBuffer.allocate(4);
-            byte[] bytes_header = new byte[]{(byte) 0xFE, 0x00, 0x01, 0x00};
+            byte[] bytes_header = new byte[]{(byte) 0xFE, 0x50, 0x01, 0x00};
             bytes.put(bytes_header);
             byte[] encrypted_data_header = bytes.array();
             bytes.clear();
 
             //Encrypted_data
-            bytes = ByteBuffer.allocate(356);
-            bytes.put(EncryptData.RSAEncrypt(EncryptData.getDataWithHash(RequestBuilder.createP_Q_inner_data(hashMap))));
+            bytes = ByteBuffer.allocate(336);
+            byte[] decrypt_answer = EncryptData.decrypt_message((byte[]) hashMap.get(Parser.ENC_ANSWER), (byte[]) hashMap.get(Parser.SERVER_NONCE), NEW_NONCE);
+            byte[] client_DH_inner_data = RequestBuilder.create_client_DH_inner_data(Parser.parse_server_DH_inner_data(decrypt_answer));
+            Log.v("BUILDER", "" + EncryptData.getDataWithHash(client_DH_inner_data).length);
+            bytes.put(EncryptData.igeEncrypt(EncryptData.IGE_KEY, EncryptData.IGE_IV, EncryptData.getDataWithHash(client_DH_inner_data)));
             byte[] encrypted_data = bytes.array();
             bytes.clear();
 
@@ -413,7 +418,7 @@ public class RequestBuilder {
         }
     }
 
-    public static byte[] generateBG(BigInteger g, BigInteger dh_prime) {
+    public static byte[] generateGB(BigInteger g, BigInteger dh_prime) {
         try {
 
             ByteBuffer bytes = ByteBuffer.allocate(256);
@@ -421,13 +426,13 @@ public class RequestBuilder {
             new Random().nextBytes(b);
             bytes.put(b);
             byte[] arrayB = bytes.array();
-            Utils.reverseArray(arrayB);
+            //Utils.reverseArray(arrayB);
             Log.v("LOGER", "arrayB: " + Utils.byteArrayToHex(arrayB));
 
 
-            byte[] bb = Utils.hexStringToByteArray("6F620AFA575C9233EB4C014110A7BCAF49464F798A18A0981FEA1E05E8DA67D9681E0FD6DF0EDF0272AE3492451A84502F2EFC0DA18741A5FB80BD82296919A70FAA6D07CBBBCA2037EA7D3E327B61D585ED3373EE0553A91CBD29B01FA9A89D479CA53D57BDE3A76FBD922A923A0A38B922C1D0701F53FF52D7EA9217080163A64901E766EB6A0F20BC391B64B9D1DD2CD13A7D0C946A3A7DF8CEC9E2236446F646C42CFE2B60A2A8D776E56C8D7519B08B88ED0970E10D12A8C9E355D765F2B7BBB7B4CA9360083435523CB0D57D2B106FD14F94B4EEE79D8AC131CA56AD389C84FE279716F8124A543337FB9EA3D988EC5FA63D90A4BA3970E7A39E5C0DE5");
-            Utils.reverseArray(bb);
-            BigInteger bi = new BigInteger(bb);
+            //byte[] bb = Utils.hexStringToByteArray("6F620AFA575C9233EB4C014110A7BCAF49464F798A18A0981FEA1E05E8DA67D9681E0FD6DF0EDF0272AE3492451A84502F2EFC0DA18741A5FB80BD82296919A70FAA6D07CBBBCA2037EA7D3E327B61D585ED3373EE0553A91CBD29B01FA9A89D479CA53D57BDE3A76FBD922A923A0A38B922C1D0701F53FF52D7EA9217080163A64901E766EB6A0F20BC391B64B9D1DD2CD13A7D0C946A3A7DF8CEC9E2236446F646C42CFE2B60A2A8D776E56C8D7519B08B88ED0970E10D12A8C9E355D765F2B7BBB7B4CA9360083435523CB0D57D2B106FD14F94B4EEE79D8AC131CA56AD389C84FE279716F8124A543337FB9EA3D988EC5FA63D90A4BA3970E7A39E5C0DE5");
+            //Utils.reverseArray(bb);
+            BigInteger bi = new BigInteger(arrayB);
             Log.v("LOGER", "g: " + Utils.byteArrayToHex(g.toByteArray()));
             Log.v("LOGER", "bi: " + Utils.byteArrayToHex(bi.toByteArray()));
             Log.v("LOGER", "dh_prime: " + Utils.byteArrayToHex(dh_prime.toByteArray()));
@@ -435,11 +440,12 @@ public class RequestBuilder {
 
             Log.v("LOGER", "G_b: " + Utils.byteArrayToHex(g_b.toByteArray()));
 
+            return g_b.toByteArray();
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
 
-
-        }catch (Exception e) {
-            e.printStackTrace();}
-        return null;
     }
 
 }
