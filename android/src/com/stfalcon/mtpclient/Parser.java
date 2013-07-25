@@ -200,7 +200,7 @@ public class Parser {
         ByteBuffer.wrap(response, 4, 16).get(nonce);
         byte[] server_nonce = new byte[16];
         ByteBuffer.wrap(response, 20, server_nonce.length).get(server_nonce);
-        byte[] new_nonce_hash1 = new byte[4];
+        byte[] new_nonce_hash1 = new byte[16];
         ByteBuffer.wrap(response, 36, new_nonce_hash1.length).get(new_nonce_hash1);
         result.put(Parser.TYPE, TYPE_DH_GEN_OK);
         result.put(Parser.NONCE, nonce);
