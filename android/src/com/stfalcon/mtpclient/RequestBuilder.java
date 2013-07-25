@@ -210,8 +210,16 @@ public class RequestBuilder {
             byte[] arrayRetry_id = bytes.array();
             bytes.clear();
 
+
+            //Encrypted_data_bytes_header
+            bytes = ByteBuffer.allocate(4);
+            byte[] bytes_header = new byte[]{(byte) 0xFE, 0x00, 0x01, 0x00};
+            bytes.put(bytes_header);
+            byte[] gb_header = bytes.array();
+            bytes.clear();
+
             //g_b
-            bytes = ByteBuffer.allocate(260);
+            bytes = ByteBuffer.allocate(256);
             byte[] g_b = generateGB(new BigInteger((byte[]) hashMap.get(Parser.G)), new BigInteger(1, (byte[]) hashMap.get(Parser.DH_PRIME)));//G_B
             bytes.put(g_b);
             Log.v("LOGER", "GB" + g_b.length + " " + Utils.byteArrayToHex(g_b));
@@ -224,6 +232,7 @@ public class RequestBuilder {
             outputStream.write(arrayNonce);
             outputStream.write(arrayServerNonce);
             outputStream.write(arrayRetry_id);
+            outputStream.write(gb_header);
             outputStream.write(array_g_b);
 
             return outputStream.toByteArray();
@@ -391,7 +400,7 @@ public class RequestBuilder {
             byte[] decrypt_answer = EncryptData.decrypt_message((byte[]) hashMap.get(Parser.ENC_ANSWER), (byte[]) hashMap.get(Parser.SERVER_NONCE), NEW_NONCE);
             byte[] client_DH_inner_data = RequestBuilder.create_client_DH_inner_data(Parser.parse_server_DH_inner_data(decrypt_answer));
             Log.v("BUILDER", "" + EncryptData.getDataWithHash(client_DH_inner_data).length);
-            bytes.put(EncryptData.igeEncrypt(EncryptData.IGE_KEY, EncryptData.IGE_IV, EncryptData.getDataWithHash(client_DH_inner_data)));
+            bytes.put(EncryptData.igeEncrypt(EncryptData.IGE_KEY, EncryptData.IGE_IV, EncryptData.getDataWithHash1(client_DH_inner_data)));
             byte[] encrypted_data = bytes.array();
             bytes.clear();
 
@@ -437,10 +446,10 @@ public class RequestBuilder {
             Log.v("LOGER", "bi: " + Utils.byteArrayToHex(bi.toByteArray()));
             Log.v("LOGER", "dh_prime: " + Utils.byteArrayToHex(dh_prime.toByteArray()));
             BigInteger g_b = g.modPow(bi, dh_prime);
+            byte[] gb_array = Utils.subByte(g_b.toByteArray(), 1, g_b.toByteArray().length - 1);
+            Log.v("LOGER", "G_b: " + Utils.byteArrayToHex(gb_array));
 
-            Log.v("LOGER", "G_b: " + Utils.byteArrayToHex(g_b.toByteArray()));
-
-            return g_b.toByteArray();
+            return gb_array;
         } catch (Exception e) {
             e.printStackTrace();
             return null;
