@@ -183,29 +183,36 @@ public class Parser {
 
     public static HashMap<String, Object> parseTYPE_DH_GEN_OK(byte[] response) {
 
-        //Get message
         HashMap<String, Object> result = new HashMap<String, Object>();
         ByteBuffer buffer = ByteBuffer.wrap(response, 0, 4);
         buffer.order(ByteOrder.LITTLE_ENDIAN);
         int header_message_length = buffer.getInt();
+
         byte[] message = new byte[header_message_length];
         ByteBuffer.wrap(response, 0, header_message_length).get(message);
+
         int header_pack_id = ByteBuffer.wrap(message, 4, 4).order(ByteOrder.LITTLE_ENDIAN).getInt();
         Log.v("PARSER", "HEADER: " + header_message_length + " " + header_pack_id);
-        long auth_key = ByteBuffer.wrap(message, 8, 8).order(ByteOrder.LITTLE_ENDIAN).getLong();
-        long message_id = ByteBuffer.wrap(message, 16, 8).order(ByteOrder.LITTLE_ENDIAN).getLong();
-        int message_length = ByteBuffer.wrap(message, 24, 4).order(ByteOrder.LITTLE_ENDIAN).getInt();
-        long res_code = ByteBuffer.wrap(message, 28, 4).order(ByteOrder.BIG_ENDIAN).getInt();
+
+        byte[] res_code = new byte[4];
+        ByteBuffer.wrap(message, 8, res_code.length).get(res_code);
+        Utils.reverseArray(res_code);
+
         byte[] nonce = new byte[16];
-        ByteBuffer.wrap(response, 4, 16).get(nonce);
+        ByteBuffer.wrap(response, 12, 16).get(nonce);
+
         byte[] server_nonce = new byte[16];
-        ByteBuffer.wrap(response, 20, server_nonce.length).get(server_nonce);
+        ByteBuffer.wrap(response, 28, server_nonce.length).get(server_nonce);
+
         byte[] new_nonce_hash1 = new byte[16];
-        ByteBuffer.wrap(response, 36, new_nonce_hash1.length).get(new_nonce_hash1);
+        ByteBuffer.wrap(response, 44, new_nonce_hash1.length).get(new_nonce_hash1);
+
         result.put(Parser.TYPE, TYPE_DH_GEN_OK);
         result.put(Parser.NONCE, nonce);
         result.put(Parser.SERVER_NONCE, server_nonce);
         result.put(Parser.NEW_NONCE_HASH1, new_nonce_hash1);
+
+        Log.v("PARSER", "NONCE: " + Utils.byteArrayToHex(res_code));
         Log.v("PARSER", "NONCE: " + Utils.byteArrayToHex(nonce));
         Log.v("PARSER", "Server_NONCE: " + Utils.byteArrayToHex(server_nonce));
         Log.v("PARSER", "New_nonce_hash1: " + Utils.byteArrayToHex(server_nonce));
