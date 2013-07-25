@@ -7,6 +7,7 @@ import org.spongycastle.asn1.ASN1InputStream;
 import org.spongycastle.asn1.x509.RSAPublicKeyStructure;
 
 import java.io.ByteArrayOutputStream;
+import java.nio.ByteBuffer;
 import java.security.InvalidKeyException;
 import java.security.KeyFactory;
 import java.security.MessageDigest;
@@ -96,7 +97,7 @@ public class EncryptData {
     public static byte[] getTmp_aes_iv(byte[] server_nonce, byte[] new_nonce) {
         try {
             byte[] tmp_aes_iv = Utils.sumByte(Utils.subByte(SHAsum(Utils.sumByte(server_nonce, new_nonce)), 12, 8),
-                    Utils.sumByte(SHAsum(Utils.sumByte(server_nonce, new_nonce)), Utils.subByte(new_nonce, 0, 4)));
+                    Utils.sumByte(SHAsum(Utils.sumByte(new_nonce, new_nonce)), Utils.subByte(new_nonce, 0, 4)));
             return tmp_aes_iv;
         } catch (Exception e) {
             e.printStackTrace();
@@ -106,37 +107,61 @@ public class EncryptData {
 
     public static byte[] getTmp_aes_key(byte[] server_nonce, byte[] new_nonce) {
         try {
-            byte[] tmp_aes_iv = Utils.sumByte(SHAsum(Utils.sumByte(new_nonce, server_nonce)),
+            byte[] tmp_aes_key = Utils.sumByte(SHAsum(Utils.sumByte(new_nonce, server_nonce)),
                     Utils.subByte(SHAsum(Utils.sumByte(server_nonce, new_nonce)), 0, 12));
-            return tmp_aes_iv;
+            //Log.v("DECRYPT",Utils.byteArrayToHex(new_nonce));
+            return tmp_aes_key;
         } catch (Exception e) {
             e.printStackTrace();
             return null;
         }
     }
 
-    public static final byte[] ige(final byte[] key, final byte[] IV,
-                                   final byte[] Message) throws Exception {
+    public static byte[] decrypt_message(final byte[] message, byte[] server_nonce, byte[] new_nonce) {
+        try {
+            byte[] key = EncryptData.getTmp_aes_key(server_nonce, new_nonce);
+            byte[] iv = EncryptData.getTmp_aes_iv(server_nonce, new_nonce);
+            Log.v("DECRYPT", "getTmp_aes_key: " + Utils.byteArrayToHex(key));
+            Log.v("DECRYPT", "getTmp_aes_iv: " + Utils.byteArrayToHex(iv));
+            byte[] mes = message;
+            byte[] res = EncryptData.igeDecrypt(key, iv, mes);
+            ByteBuffer byteBuffer = ByteBuffer.wrap(res);
+            res = Utils.subByte(res, 20, res.length - 20);
+            res = Utils.subByte(res, 0, res.length - 8);
+            Log.v("DECRYPT", "(" + mes.length + ")" + " " + Utils.byteArrayToHex(res) + "  (" + res.length + ")");
+            //res = Utils.subByte(res,0,res.length - )
+            return res;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    public static byte[] igeDecrypt(final byte[] key, final byte[] IV,
+                                    final byte[] Message) throws Exception {
 
         final Cipher cipher = Cipher.getInstance("AES/ECB/NoPadding");
         cipher.init(Cipher.DECRYPT_MODE, new SecretKeySpec(key, "AES"));
 
         final int blocksize = cipher.getBlockSize();
 
-        byte[] xPrev = Arrays.copyOfRange(IV, 0, blocksize);
-        byte[] yPrev = Arrays.copyOfRange(IV, blocksize, IV.length);
-
+        byte[] iv1 = Arrays.copyOfRange(IV, 0, blocksize);
+        byte[] iv2 = Arrays.copyOfRange(IV, blocksize, IV.length);
+        //Log.v("LOGER","key"+Utils.byteArrayToHex(key));
+        //Log.v("LOGER","iv1"+Utils.byteArrayToHex(iv1));
+        //Log.v("LOGER","iv2"+Utils.byteArrayToHex(iv2));
 
         byte[] decrypted = new byte[0];
 
-        byte[] y, x;
+        byte[] block, tmp;
         for (int i = 0; i < Message.length; i += blocksize) {
-            x = java.util.Arrays.copyOfRange(Message, i, i + blocksize);
-            y = Utils.xor(cipher.doFinal(Utils.xor(x, yPrev)), xPrev);
-            xPrev = x;
-            yPrev = y;
+            block = java.util.Arrays.copyOfRange(Message, i, i + blocksize);
+            //Log.v("LOGER","block "+Utils.byteArrayToHex(block));
+            tmp = Utils.xor(cipher.doFinal(Utils.xor(block, iv2)), iv1);
+            iv1 = block;
+            iv2 = tmp;
 
-            decrypted = Utils.sumByte(decrypted, y);
+            decrypted = Utils.sumByte(decrypted, iv2);
         }
 
         return decrypted;

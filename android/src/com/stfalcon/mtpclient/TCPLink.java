@@ -94,11 +94,14 @@ public class TCPLink extends Service {
             // PutData - это класс, с помощью которого мы передадим параметры в
             // создаваемый поток
             PutData data = new PutData();
-            data.request = RequestBuilder.create_Set_client_DHRequest(hashMap);
-            data.context = this;
+            Parser.parse_server_DH_inner_data(EncryptData.decrypt_message((byte[])
+                    hashMap.get(Parser.ENC_ANSWER), (byte[]) hashMap.get(Parser.SERVER_NONCE), RequestBuilder.NEW_NONCE));
+
+            //data.request = RequestBuilder.create_Set_client_DHRequest(hashMap);
+            // data.context = this;
             // создаем новый поток для сокет-соединения
-            new ToSocket().execute(data);
-            Log.v("LOGER", "START EXE");
+            //new ToSocket().execute(data);
+            // Log.v("LOGER", "START EXE");
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -202,10 +205,10 @@ public class TCPLink extends Service {
                 //String prop = String.valueOf(mData);
                 Log.v("GET_DATA", "data: " + Utils.byteArrayToHex(mData));
                 HashMap<String, Object> responseMap = Parser.parseResponse(mData);
-                if ((String) responseMap.get(Parser.TYPE) == Parser.TYPE_RES_PQ) {
+                if (responseMap.get(Parser.TYPE).equals(Parser.TYPE_RES_PQ)) {
                     sendReq_DH_params(responseMap);
-                } else if ((String) responseMap.get(Parser.TYPE) == Parser.TYPE_RES_DH) {
-                    //send(responseMap);
+                } else if (responseMap.get(Parser.TYPE).equals(Parser.TYPE_RES_DH)) {
+                    sendSet_DH_params(responseMap);
                 }
 
             } catch (Exception e) {
