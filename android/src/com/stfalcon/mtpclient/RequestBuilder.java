@@ -598,7 +598,7 @@ public class RequestBuilder {
 
     public static void generateAES_Key(HashMap<String, Object> hashMap) {
         SALT = Utils.xor(Utils.subByte(NEW_NONCE,0,8),Utils.subByte(SERVER_NONCE,0,8));
-        MSG_KEY = Utils.subByte(createReq_PqRequest(),createReq_PqRequest().length - 16, 16);
+        MSG_KEY = Utils.subByte(create_saveDeveloperInfo(),create_saveDeveloperInfo().length - 16, 16);
         try {
             byte[] sha1_a = EncryptData.SHAsum(Utils.sumByte(MSG_KEY, Utils.subByte(AUTH_KEY,0 ,32)));
             byte[] sha1_b = EncryptData.SHAsum(Utils.sumByte(Utils.subByte(AUTH_KEY, 32, 16),Utils.sumByte(MSG_KEY,Utils.subByte(AUTH_KEY,48 ,16))));
