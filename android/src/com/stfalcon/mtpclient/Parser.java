@@ -228,10 +228,10 @@ public class Parser {
         ByteBuffer.wrap(message, 20, server_nonce.length).get(server_nonce);
         byte[] g = new byte[4];
         ByteBuffer.wrap(message, 36, 4).get(g);
-        byte[] dh_prime = new byte[260];
-        ByteBuffer.wrap(message, 40, 260).get(dh_prime);
-        byte[] g_a = new byte[260];
-        ByteBuffer.wrap(message, 300, 260).get(g_a);
+        byte[] dh_prime = new byte[256];
+        ByteBuffer.wrap(message, 44, 256).get(dh_prime);
+        byte[] g_a = new byte[256];
+        ByteBuffer.wrap(message, 304, 256).get(g_a);
         byte[] server_time = new byte[4];
         ByteBuffer.wrap(message, 560, 4).get(server_time);
 
