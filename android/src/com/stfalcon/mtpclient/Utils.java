@@ -83,11 +83,10 @@ public class Utils {
         return data;
     }
 
-    public static byte[] xor(byte[] array_1, byte[] array_2) {
-        int i = 0;
-        byte[] array_3 = new byte[array_1.length];
-        for (byte b : array_1)
-            array_3[i] = (byte) (b ^ array_2[i++]);
-        return array_3;
+    public static byte[] xor(byte[] A, byte[] B) {
+        byte[] C = new byte[A.length];
+        for (int i = 0; i < A.length; i++)
+            C[i] = (byte) (A[i] ^ B[i]);
+        return C;
     }
 }

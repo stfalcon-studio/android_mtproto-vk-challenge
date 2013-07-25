@@ -11,6 +11,8 @@ import java.util.zip.CRC32;
 
 public class RequestBuilder {
 
+    public static byte[] NEW_NONCE;
+
     public static byte[] createReq_PqRequest() {
         try {
             //Req_Pq
@@ -148,12 +150,13 @@ public class RequestBuilder {
             byte[] arrayServerNonce = bytes.array();
             bytes.clear();
 
-            //Nonce
+            //NewNonce
             bytes = ByteBuffer.allocate(32);
             byte[] b_nonce = new byte[32];
             new Random().nextBytes(b_nonce);
-            bytes.order(ByteOrder.LITTLE_ENDIAN);
+            //bytes.order(ByteOrder.LITTLE_ENDIAN);
             byte[] arrayNewNonce = bytes.array();
+            NEW_NONCE = arrayNewNonce;
 
             bytes.put(b_nonce);
             bytes.clear();
@@ -206,7 +209,7 @@ public class RequestBuilder {
 
             //g_b
             bytes = ByteBuffer.allocate(260);
-            byte[] g_b = (byte[]) hashMap.get(Parser.SERVER_NONCE);//G_B
+            byte[] g_b = (byte[]) hashMap.get(Parser.GB);//G_B
             bytes.put(server_nonce);
             byte[] array_g_b = bytes.array();
             bytes.clear();

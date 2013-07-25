@@ -2,8 +2,6 @@ package com.stfalcon.mtpclient;
 
 import android.util.Log;
 
-import org.spongycastle.asn1.eac.UnsignedInteger;
-
 import java.math.BigInteger;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -50,9 +48,15 @@ public class Parser {
             Utils.reverseArray(code);
             String server_function = Utils.byteArrayToHex(code);
 
-            if (server_function.equals(TYPE_RES_PQ)){return parseTYPE_RES_PQ(response);}
-            if (server_function.equals(TYPE_RES_DH)){return parseTYPE_RES_DH(response);}
-            if (server_function.equals(TYPE_DH_GEN_OK)){return parseTYPE_DH_GEN_OK(response);}
+            if (server_function.equals(TYPE_RES_PQ)) {
+                return parseTYPE_RES_PQ(response);
+            }
+            if (server_function.equals(TYPE_RES_DH)) {
+                return parseTYPE_RES_DH(response);
+            }
+            if (server_function.equals(TYPE_DH_GEN_OK)) {
+                return parseTYPE_DH_GEN_OK(response);
+            }
 
 
         } catch (Exception e) {
@@ -170,9 +174,10 @@ public class Parser {
         Log.v("PARSER", "RES_CODE: " + res_code);
         Log.v("PARSER", "NONCE: " + Utils.byteArrayToHex(nonce));
         Log.v("PARSER", "Server_NONCE: " + Utils.byteArrayToHex(server_nonce));
-        byte[] enc_ansver = new byte[596];
-        ByteBuffer.wrap(response, 64, enc_ansver.length).get(enc_ansver);
-        result.put(Parser.ENC_ANSWER, enc_ansver);
+        byte[] enc_answer = new byte[592];
+        ByteBuffer.wrap(response, 68, enc_answer.length).get(enc_answer);
+        result.put(Parser.ENC_ANSWER, enc_answer);
+        Log.v("PARSER", "EncData: " + Utils.byteArrayToHex(enc_answer));
         return result;
     }
 
@@ -207,14 +212,16 @@ public class Parser {
         return result;
     }
 
-    public static HashMap<String, Object> parseTYPE_server_DH_inner_data(byte[] response) {
+    public static HashMap<String, Object> parse_server_DH_inner_data(byte[] response) {
         HashMap<String, Object> result = new HashMap<String, Object>();
-        ByteBuffer buffer = ByteBuffer.wrap(response, 0, 4);
-        buffer.order(ByteOrder.LITTLE_ENDIAN);
-        int header_message_length = buffer.getInt();
-        byte[] message = new byte[header_message_length];
-        ByteBuffer.wrap(response, 0, header_message_length).get(message);
-        long res_code = ByteBuffer.wrap(message, 0, 4).order(ByteOrder.BIG_ENDIAN).getInt();
+        //ByteBuffer buffer = ByteBuffer.wrap(response, 0, 4);
+        //buffer.order(ByteOrder.LITTLE_ENDIAN);
+        //int header_message_length = buffer.getInt();
+        byte[] message = new byte[564];
+        ByteBuffer.wrap(response, 0, message.length).get(message);
+        byte[] res_code = new byte[4];
+        ByteBuffer.wrap(message, 0, res_code.length).get(res_code);
+        Utils.reverseArray(res_code);
         byte[] nonce = new byte[16];
         ByteBuffer.wrap(message, 4, 16).get(nonce);
         byte[] server_nonce = new byte[16];
@@ -235,6 +242,7 @@ public class Parser {
         result.put(Parser.DH_PRIME, dh_prime);
         result.put(Parser.GA, g_a);
         result.put(Parser.SERVER_TIME, server_time);
+        Log.v("PARSER", "RES_CODE: " + Utils.byteArrayToHex(res_code));
         Log.v("PARSER", "NONCE: " + Utils.byteArrayToHex(nonce));
         Log.v("PARSER", "Server_NONCE: " + Utils.byteArrayToHex(server_nonce));
         Log.v("PARSER", "G: " + Utils.byteArrayToHex(g));
