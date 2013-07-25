@@ -415,6 +415,7 @@ public class RequestBuilder {
             bytes.put(EncryptData.igeEncrypt(EncryptData.IGE_KEY, EncryptData.IGE_IV, EncryptData.getDataWithHash1(client_DH_inner_data)));
             byte[] encrypted_data = bytes.array();
             bytes.clear();
+            Log.v("STRING", Utils.byteArrayToHex(l_string(encrypted_data)));
 
             ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
             outputStream.write(arrayAuth);
@@ -466,6 +467,124 @@ public class RequestBuilder {
         }
     }
 
+    public static byte[] create_saveDeveloperInfo() {
+        //SALT ()
+        ByteBuffer bytes = ByteBuffer.allocate(8);
+        bytes.put(SALT);
+        byte[] salt = bytes.array();
+        bytes.clear();
+
+        //sessionID ()
+        bytes = ByteBuffer.allocate(8);
+        bytes.putInt(0);
+        byte[] session_id = bytes.array();//0
+        bytes.clear();
+
+        //MessageID
+        bytes = ByteBuffer.allocate(8);
+        bytes.putLong(System.currentTimeMillis() / 1000L);//
+        byte[] arrayMessageID = bytes.array();
+        bytes.clear();
+
+        //seq_no
+        bytes = ByteBuffer.allocate(4);
+        bytes.order(ByteOrder.LITTLE_ENDIAN);//1
+        bytes.putInt(1);
+        byte[] seq_no = bytes.array();
+        bytes.clear();
+
+        //VK ID
+        bytes = ByteBuffer.allocate(4);
+        //bytes.order(ByteOrder.LITTLE_ENDIAN);
+        bytes.putInt(21423318);
+        byte[] vk_id = bytes.array();
+        bytes.clear();
+
+        //name
+        bytes = ByteBuffer.allocate(4);
+        //bytes.order(ByteOrder.LITTLE_ENDIAN);
+        String s_name = "Степан";
+        bytes.put(l_string(s_name.getBytes()));
+        byte[] name = bytes.array();
+        bytes.clear();
+
+        //phone
+        bytes = ByteBuffer.allocate(4);
+        //bytes.order(ByteOrder.LITTLE_ENDIAN);
+        String s_phone = "+80978470342";
+        bytes.put(l_string(s_phone.getBytes()));
+        byte[] phone = bytes.array();
+        bytes.clear();
+
+        //age
+        bytes = ByteBuffer.allocate(4);
+        bytes.order(ByteOrder.LITTLE_ENDIAN);
+        bytes.putInt(27);
+        byte[] age = bytes.array();
+        bytes.clear();
+
+        //city
+        bytes = ByteBuffer.allocate(4);
+        String s_city = "Хмельницкий";
+        bytes.put(l_string(s_city.getBytes()));
+        byte[] city = bytes.array();
+        bytes.clear();
+
+        //MessageLength
+        bytes = ByteBuffer.allocate(4);
+        //bytes.order(ByteOrder.LITTLE_ENDIAN);
+        bytes.putInt(vk_id.length + name.length + phone.length + age.length + city.length);
+        byte[] msg_len = bytes.array();
+        bytes.clear();
+
+        try {
+            ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+            outputStream.write(salt);
+            outputStream.write(session_id);
+            outputStream.write(arrayMessageID);
+            outputStream.write(seq_no);
+            outputStream.write(msg_len);
+            outputStream.write(vk_id);
+            outputStream.write(phone);
+            outputStream.write(age);
+            outputStream.write(city);
+            return outputStream.toByteArray();
+        } catch (IOException e) {
+            e.printStackTrace();
+            return null;
+        }
+
+
+    }
+
+    public static byte[] l_string(byte[] data) {
+        byte[] res;
+        if (data.length > 254) {
+            ByteBuffer byteBuffer = ByteBuffer.allocate(4);
+            byteBuffer.put((byte) 254);
+            byteBuffer.put((byte) (data.length));
+            byteBuffer.put((byte) (data.length >> 8));
+            byteBuffer.put((byte) (data.length >> 16));
+            int ran_len = 0;
+            while (((data.length + 4 + ran_len) % 4) != 0) {
+                ran_len++;
+            }
+            ByteBuffer resBuffer = ByteBuffer.allocate(data.length + 4 + ran_len);
+            resBuffer.put(data);
+            res = Utils.sumByte(byteBuffer.array(), resBuffer.array());
+        } else {
+            res = Utils.sumByte(new byte[]{(byte) data.length}, data);
+            int ran_len = 0;
+            while (((res.length + ran_len) % 4) != 0) {
+                ran_len++;
+            }
+            ByteBuffer resBuffer = ByteBuffer.allocate(res.length + ran_len);
+            resBuffer.put(data);
+            res = resBuffer.array();
+        }
+        return res;
+    }
+
     public static void saveAuthKey(HashMap<String, Object> hashMap) {
         AUTH_KEY = generateGB(new BigInteger(G_A), new BigInteger(1, DH_PRIME));
         try {
@@ -491,6 +610,4 @@ public class RequestBuilder {
             e.printStackTrace();
         }
     }
-
-
 }

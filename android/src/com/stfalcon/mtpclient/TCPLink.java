@@ -210,7 +210,7 @@ public class TCPLink extends Service {
                 } else if (responseMap.get(Parser.TYPE).equals(Parser.TYPE_RES_DH)) {
                     sendSet_DH_params(responseMap);
                 } else if (responseMap.get(Parser.TYPE).equals(Parser.TYPE_DH_GEN_OK)) {
-                    RequestBuilder.saveAuthKey();
+                    //RequestBuilder.saveAuthKey();
                 }
 
             } catch (Exception e) {
