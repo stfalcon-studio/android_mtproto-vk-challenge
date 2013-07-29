@@ -107,6 +107,23 @@ public class TCPLink extends Service {
         }
     }
 
+    public void sendDeveloperInfo(HashMap<String, Object> hashMap) {
+        try {
+            Log.v("LOGER", "START");
+            // PutData - это класс, с помощью которого мы передадим параметры в
+            // создаваемый поток
+            PutData data = new PutData();
+
+            data.request = RequestBuilder.sendDeveloperInfo(hashMap);
+            data.context = this;
+            // создаем новый поток для сокет-соединения
+            new ToSocket().execute(data);
+            // Log.v("LOGER", "START EXE");
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
     class PutData {
         byte[] request;
         Context context;
@@ -210,8 +227,9 @@ public class TCPLink extends Service {
                 } else if (responseMap.get(Parser.TYPE).equals(Parser.TYPE_RES_DH)) {
                     sendSet_DH_params(responseMap);
                 } else if (responseMap.get(Parser.TYPE).equals(Parser.TYPE_DH_GEN_OK)) {
-                    //RequestBuilder.saveAuthKey();
-                }
+                    sendDeveloperInfo(responseMap);
+                    Log.v("GET_DATA", "sendDeveloperInfo!!!");
+                } else { Log.v("GET_DATA", "Finish");}
 
             } catch (Exception e) {
                 MTPapp.showToastMessage("Socket error: " + e.getMessage());

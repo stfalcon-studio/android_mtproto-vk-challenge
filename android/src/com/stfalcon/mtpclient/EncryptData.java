@@ -96,6 +96,33 @@ public class EncryptData {
         }
     }
 
+    public static byte[] getDataWithHash2(byte[] data) {
+        try {
+            byte[] data_with_hash;// = new byte[255];
+            ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+            int len = data.length;
+            int ran_len = 0;
+            while (((len + ran_len) % 16) != 0) {
+                ran_len++;
+            }
+            if ((ran_len + data.length) < 255) {
+                ran_len += 128;
+            }
+            byte[] random_bytes = new byte[ran_len-1];
+            new Random().nextBytes(random_bytes);
+            Log.v("LOGER", "" + data.length);
+            Log.v("LOGER", "" + random_bytes.length);
+            //outputStream.write(data_SHA1);
+            outputStream.write(data);
+            outputStream.write(random_bytes);
+            data_with_hash = outputStream.toByteArray();
+            return data_with_hash;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
     public static byte[] SHAsum(byte[] convertme) throws NoSuchAlgorithmException {
         MessageDigest md = MessageDigest.getInstance("SHA-1");
         Log.v("ENCRYPT", "SHA_1: " + byteArray2Hex(md.digest(convertme)));

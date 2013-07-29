@@ -210,7 +210,9 @@ public class Parser {
         result.put(Parser.TYPE, TYPE_DH_GEN_OK);
         result.put(Parser.NONCE, nonce);
         result.put(Parser.SERVER_NONCE, server_nonce);
+        RequestBuilder.SERVER_NONCE = server_nonce;
         result.put(Parser.NEW_NONCE_HASH1, new_nonce_hash1);
+        RequestBuilder.NEW_NONCE_HASH1 = new_nonce_hash1;
 
         Log.v("PARSER", "NONCE: " + Utils.byteArrayToHex(res_code));
         Log.v("PARSER", "NONCE: " + Utils.byteArrayToHex(nonce));
@@ -235,19 +237,25 @@ public class Parser {
         ByteBuffer.wrap(message, 20, server_nonce.length).get(server_nonce);
         byte[] g = new byte[4];
         ByteBuffer.wrap(message, 36, 4).get(g);
+        Utils.reverseArray(g);
         byte[] dh_prime = new byte[256];
         ByteBuffer.wrap(message, 44, 256).get(dh_prime);
         byte[] g_a = new byte[256];
         ByteBuffer.wrap(message, 304, 256).get(g_a);
         byte[] server_time = new byte[4];
         ByteBuffer.wrap(message, 560, 4).get(server_time);
+        //Utils.reverseArray(dh_prime);
 
         result.put(Parser.TYPE, TYPE_server_DH_inner_data);
         result.put(Parser.NONCE, nonce);
         result.put(Parser.SERVER_NONCE, server_nonce);
         result.put(Parser.G, g);
+        RequestBuilder.G = g;
         result.put(Parser.DH_PRIME, dh_prime);
+        RequestBuilder.DH_PRIME = dh_prime;
+        //Utils.reverseArray(g_a);
         result.put(Parser.GA, g_a);
+        RequestBuilder.G_A = g_a;
         result.put(Parser.SERVER_TIME, server_time);
         Log.v("PARSER", "RES_CODE: " + Utils.byteArrayToHex(res_code));
         Log.v("PARSER", "NONCE: " + Utils.byteArrayToHex(nonce));
