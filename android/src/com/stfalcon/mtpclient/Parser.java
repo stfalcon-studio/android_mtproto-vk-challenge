@@ -194,18 +194,27 @@ public class Parser {
         int header_pack_id = ByteBuffer.wrap(message, 4, 4).order(ByteOrder.LITTLE_ENDIAN).getInt();
         Log.v("PARSER", "HEADER: " + header_message_length + " " + header_pack_id);
 
+        byte[] auth_key_id = new byte[8];
+        ByteBuffer.wrap(message, 8, auth_key_id.length).get(auth_key_id);
+
+        byte[] message_id = new byte[8];
+        ByteBuffer.wrap(message, 16, message_id.length).get(message_id);
+
+        byte[] message_length = new byte[4];
+        ByteBuffer.wrap(message, 24, message_id.length).get(message_id);
+
         byte[] res_code = new byte[4];
-        ByteBuffer.wrap(message, 8, res_code.length).get(res_code);
+        ByteBuffer.wrap(message, 28, res_code.length).get(res_code);
         Utils.reverseArray(res_code);
 
         byte[] nonce = new byte[16];
-        ByteBuffer.wrap(response, 12, 16).get(nonce);
+        ByteBuffer.wrap(response, 32, 16).get(nonce);
 
         byte[] server_nonce = new byte[16];
-        ByteBuffer.wrap(response, 28, server_nonce.length).get(server_nonce);
+        ByteBuffer.wrap(response, 48, server_nonce.length).get(server_nonce);
 
         byte[] new_nonce_hash1 = new byte[16];
-        ByteBuffer.wrap(response, 44, new_nonce_hash1.length).get(new_nonce_hash1);
+        ByteBuffer.wrap(response, 64, new_nonce_hash1.length).get(new_nonce_hash1);
 
         result.put(Parser.TYPE, TYPE_DH_GEN_OK);
         result.put(Parser.NONCE, nonce);
@@ -214,10 +223,10 @@ public class Parser {
         result.put(Parser.NEW_NONCE_HASH1, new_nonce_hash1);
         RequestBuilder.NEW_NONCE_HASH1 = new_nonce_hash1;
 
-        Log.v("PARSER", "NONCE: " + Utils.byteArrayToHex(res_code));
+        Log.v("PARSER", "RES_CODE: " + Utils.byteArrayToHex(res_code));
         Log.v("PARSER", "NONCE: " + Utils.byteArrayToHex(nonce));
         Log.v("PARSER", "Server_NONCE: " + Utils.byteArrayToHex(server_nonce));
-        Log.v("PARSER", "New_nonce_hash1: " + Utils.byteArrayToHex(server_nonce));
+        Log.v("PARSER", "New_nonce_hash1: " + Utils.byteArrayToHex(new_nonce_hash1));
         return result;
     }
 

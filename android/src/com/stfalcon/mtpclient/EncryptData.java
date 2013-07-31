@@ -105,9 +105,9 @@ public class EncryptData {
             while (((len + ran_len) % 16) != 0) {
                 ran_len++;
             }
-            if ((ran_len + data.length) < 255) {
+            /*if ((ran_len + data.length) < 255) {
                 ran_len += 128;
-            }
+            }*/
             byte[] random_bytes = new byte[ran_len-1];
             new Random().nextBytes(random_bytes);
             Log.v("LOGER", "" + data.length);
