@@ -56,7 +56,7 @@ class BigIntegerMath {
         factors.clear();
     }
 
-    public BigInteger[] getfactors() {
+    public BigInteger[] getFactors() {
         try {
             Set<BigInteger> s = factors.keySet();
             BigInteger[] res = new BigInteger[s.size()];

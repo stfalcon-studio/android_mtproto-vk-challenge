@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.math.BigInteger;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Random;
@@ -237,7 +238,6 @@ public class RequestBuilder {
             //g_b
             bytes = ByteBuffer.allocate(256);
             byte[] g_b = generateGB(new BigInteger(G), new BigInteger(1, DH_PRIME));//G_B
-            Log.v("LOGER", "GB" + g_b.length + " " + Utils.byteArrayToHex(g_b));
             bytes.put(g_b);
 
             byte[] array_g_b = bytes.array();
@@ -416,13 +416,10 @@ public class RequestBuilder {
             //Encrypted_data
             bytes = ByteBuffer.allocate(336);
             byte[] decrypt_answer = EncryptData.decrypt_message((byte[]) hashMap.get(Parser.ENC_ANSWER), (byte[]) hashMap.get(Parser.SERVER_NONCE), NEW_NONCE);
-            //Parser.parse_server_DH_inner_data(decrypt_answer);
             byte[] client_DH_inner_data = RequestBuilder.create_client_DH_inner_data(Parser.parse_server_DH_inner_data(decrypt_answer));
-            Log.v("BUILDER", "" + EncryptData.getDataWithHash(client_DH_inner_data).length);
             bytes.put(EncryptData.igeEncrypt(EncryptData.IGE_KEY, EncryptData.IGE_IV, EncryptData.getDataWithHash1(client_DH_inner_data)));
             byte[] encrypted_data = bytes.array();
             bytes.clear();
-            Log.v("STRING", Utils.byteArrayToHex(l_string(encrypted_data)));
 
             ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
             outputStream.write(arrayAuth);
@@ -453,24 +450,14 @@ public class RequestBuilder {
             ByteBuffer bytes = ByteBuffer.allocate(256);
             byte[] b = new byte[256];
             new Random().nextBytes(b);
-            //b = Utils.hexStringToByteArray("6F620AFA575C9233EB4C014110A7BCAF49464F798A18A0981FEA1E05E8DA67D9681E0FD6DF0EDF0272AE3492451A84502F2EFC0DA18741A5FB80BD82296919A70FAA6D07CBBBCA2037EA7D3E327B61D585ED3373EE0553A91CBD29B01FA9A89D479CA53D57BDE3A76FBD922A923A0A38B922C1D0701F53FF52D7EA9217080163A64901E766EB6A0F20BC391B64B9D1DD2CD13A7D0C946A3A7DF8CEC9E2236446F646C42CFE2B60A2A8D776E56C8D7519B08B88ED0970E10D12A8C9E355D765F2B7BBB7B4CA9360083435523CB0D57D2B106FD14F94B4EEE79D8AC131CA56AD389C84FE279716F8124A543337FB9EA3D988EC5FA63D90A4BA3970E7A39E5C0DE5");
             bytes.put(b);
             byte[] arrayB = bytes.array();
-            //Utils.reverseArray(arrayB);
-            Log.v("LOGER", "arrayB: " + Utils.byteArrayToHex(arrayB));
-            //byte[] bb = Utils.hexStringToByteArray("6F620AFA575C9233EB4C014110A7BCAF49464F798A18A0981FEA1E05E8DA67D9681E0FD6DF0EDF0272AE3492451A84502F2EFC0DA18741A5FB80BD82296919A70FAA6D07CBBBCA2037EA7D3E327B61D585ED3373EE0553A91CBD29B01FA9A89D479CA53D57BDE3A76FBD922A923A0A38B922C1D0701F53FF52D7EA9217080163A64901E766EB6A0F20BC391B64B9D1DD2CD13A7D0C946A3A7DF8CEC9E2236446F646C42CFE2B60A2A8D776E56C8D7519B08B88ED0970E10D12A8C9E355D765F2B7BBB7B4CA9360083435523CB0D57D2B106FD14F94B4EEE79D8AC131CA56AD389C84FE279716F8124A543337FB9EA3D988EC5FA63D90A4BA3970E7A39E5C0DE5");
-            //Utils.reverseArray(bb);
             B = new BigInteger(arrayB);
-            Log.v("LOGER", "g: " + Utils.byteArrayToHex(g.toByteArray()));
-            Log.v("LOGER", "B: " + Utils.byteArrayToHex(B.toByteArray()));
-            Log.v("LOGER", "dh_prime: " + Utils.byteArrayToHex(dh_prime.toByteArray()));
             BigInteger g_b = g.modPow(B, dh_prime);
-            //byte[] gb_array = Utils.subByte(g_b.toByteArray(), 1, g_b.toByteArray().length - 1);
             byte[] gb_arr = g_b.toByteArray();
             if (gb_arr[0] == 0x00) {
                 gb_arr = Utils.subByte(gb_arr, 1, gb_arr.length - 1);
             }
-            Log.v("LOGER", "G_b: " + Utils.byteArrayToHex(gb_arr));
             saveAuthKey();
             return gb_arr;
         } catch (Exception e) {
@@ -488,25 +475,18 @@ public class RequestBuilder {
 
         //sessionID ()
         bytes = ByteBuffer.allocate(8);
-        //bytes.put(SESSION_ID);
+        bytes.put(SESSION_ID);
         bytes.order(ByteOrder.LITTLE_ENDIAN);
-        bytes.putInt(454554545);
         byte[] session_id = bytes.array();//0
         bytes.clear();
 
         //MessageID
         bytes = ByteBuffer.allocate(8);
-        //bytes.order(ByteOrder.LITTLE_ENDIAN);
         bytes.putLong((System.currentTimeMillis() / 1000) << 32);
         byte[] arrayMessageID = bytes.array();
         bytes.clear();
 
         //seq_no
-        //bytes = ByteBuffer.allocate(4);
-        /*byte[] seq_no = {(byte) 0x9a, 0x5f, 0x6e, (byte) 0x95};
-        //Utils.reverseArray(seq_no);
-        bytes.order(ByteOrder.LITTLE_ENDIAN);
-        bytes.put(seq_no);*/
         bytes = ByteBuffer.allocate(4);
         bytes.order(ByteOrder.LITTLE_ENDIAN);//1
         bytes.putInt(1);
@@ -521,17 +501,13 @@ public class RequestBuilder {
         bytes.clear();
 
         //name
-        //bytes = ByteBuffer.allocate(36);
         String s_name = "Степан Танасийчук";
-        //bytes.put(l_string(s_name.getBytes()));
         byte[] name = l_string(s_name.getBytes());
         bytes.clear();
 
         //phone
-        //bytes = ByteBuffer.allocate(16);
+
         String s_phone = "+380978740342";
-        //Log.v("DEVELOPER", "s_phone" + s_phone.getBytes().length);
-        //bytes.put(l_string(s_phone.getBytes()));
         byte[] phone = l_string(s_phone.getBytes());
         bytes.clear();
 
@@ -543,9 +519,7 @@ public class RequestBuilder {
         bytes.clear();
 
         //city
-        //bytes = ByteBuffer.allocate(24);
         String s_city = "Хмельницкий";
-        //bytes.put(l_string(s_city.getBytes()));
         byte[] city = l_string(s_city.getBytes());
         Log.v("DEVELOPER", "DATA_CITY" + Utils.byteArrayToHex(city));
         bytes.clear();
@@ -562,7 +536,6 @@ public class RequestBuilder {
 
         //req
         bytes = ByteBuffer.allocate(4);
-        //bytes.order(ByteOrder.LITTLE_ENDIAN);
         byte[] req_no = {(byte) 0x9a, 0x5f, 0x6e, (byte) 0x95};
         Utils.reverseArray(req_no);
         bytes.put(req_no);
@@ -599,25 +572,17 @@ public class RequestBuilder {
 
         //sessionID ()
         bytes = ByteBuffer.allocate(8);
-        //bytes.put(SESSION_ID);
-        bytes.order(ByteOrder.LITTLE_ENDIAN);
-        bytes.putInt(454554545);
+        bytes.put(SESSION_ID);
         byte[] session_id = bytes.array();//0
         bytes.clear();
 
         //MessageID
         bytes = ByteBuffer.allocate(8);
-        //bytes.order(ByteOrder.LITTLE_ENDIAN);
         bytes.putLong((System.currentTimeMillis() / 1000) << 32);
         byte[] arrayMessageID = bytes.array();
         bytes.clear();
 
         //seq_no
-        //bytes = ByteBuffer.allocate(4);
-        /*byte[] seq_no = {(byte) 0x9a, 0x5f, 0x6e, (byte) 0x95};
-        //Utils.reverseArray(seq_no);
-        bytes.order(ByteOrder.LITTLE_ENDIAN);
-        bytes.put(seq_no);*/
         bytes = ByteBuffer.allocate(4);
         bytes.order(ByteOrder.LITTLE_ENDIAN);//1
         bytes.putInt(1);
@@ -647,10 +612,6 @@ public class RequestBuilder {
             outputStream.write(msg_len);
             outputStream.write(req);
             outputStream.write(ran);
-            /*outputStream.write(name);
-            outputStream.write(phone);
-            outputStream.write(age);
-            outputStream.write(city);*/
             return outputStream.toByteArray();
         } catch (IOException e) {
             e.printStackTrace();
@@ -664,7 +625,6 @@ public class RequestBuilder {
 
             //AUTH_KEY_ID ()
             ByteBuffer bytes = ByteBuffer.allocate(8);
-            //bytes.order(ByteOrder.LITTLE_ENDIAN);
             bytes.put(AUTH_KEY_HESH);
             byte[] arrayAuth = bytes.array();
             bytes.clear();
@@ -672,7 +632,6 @@ public class RequestBuilder {
 
             //MessageKey
             bytes = ByteBuffer.allocate(16);
-            //bytes.order(ByteOrder.LITTLE_ENDIAN);
             bytes.put(MSG_KEY);
             byte[] arrayMessageKey = bytes.array();
             bytes.clear();
@@ -680,8 +639,6 @@ public class RequestBuilder {
 
 
             //Encrypted_data
-            //bytes = ByteBuffer.allocate(272);
-            //byte[] decrypt_answer = EncryptData.decrypt_message((byte[]) hashMap.get(Parser.ENC_ANSWER), (byte[]) hashMap.get(Parser.SERVER_NONCE), NEW_NONCE);
             byte[] clientDeveloperInfo = MESSAGE_D;
             Log.v("BUILDER", "" + "DATA: " + Utils.byteArrayToHex(clientDeveloperInfo));
             Log.v("BUILDER", "" + "DATA byte : " + Utils.byteArrayToHex(EncryptData.getDataWithHash2(clientDeveloperInfo)));
@@ -693,7 +650,6 @@ public class RequestBuilder {
             Log.v("STRING", "encrypted_data len= " + encrypted_data.length);
 
             ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-            //outputStream.write(req);
             outputStream.write(arrayAuth);
             outputStream.write(arrayMessageKey);
             outputStream.write(encrypted_data);
@@ -714,7 +670,6 @@ public class RequestBuilder {
 
     public static byte[] l_string(byte[] data) {
         byte[] res;
-        Log.v("STRING", "util" + Utils.byteArrayToHex(data));
         if (data.length > 254) {
             ByteBuffer byteBuffer = ByteBuffer.allocate(4);
             byteBuffer.put((byte) 254);
@@ -761,6 +716,20 @@ public class RequestBuilder {
 
     }
 
+    public static void generateAES_Key_DEC(byte[] msg_key) {
+        try {
+            int x = 0;
+            byte[] sha1_a = EncryptData.SHAsum(Utils.sumByte(msg_key, Utils.subByte(AUTH_KEY, x, 32)));
+            byte[] sha1_b = EncryptData.SHAsum(Utils.sumByte(Utils.subByte(AUTH_KEY, 32 + x, 16), Utils.sumByte(msg_key, Utils.subByte(AUTH_KEY, 48 + x, 16))));
+            byte[] sha1_c = EncryptData.SHAsum(Utils.sumByte(Utils.subByte(AUTH_KEY, 64 + x, 32), msg_key));
+            byte[] sha1_d = EncryptData.SHAsum(Utils.sumByte(msg_key, Utils.subByte(AUTH_KEY, 96 + x, 32)));
+            AES_KEY = Utils.sumByte(Utils.sumByte(Utils.subByte(sha1_a, 0, 8), Utils.subByte(sha1_b, 8, 12)), Utils.subByte(sha1_c, 4, 12));
+            AES_IV = Utils.sumByte(Utils.sumByte(Utils.subByte(sha1_a, 8, 12), Utils.subByte(sha1_b, 0, 8)), Utils.sumByte(Utils.subByte(sha1_c, 16, 4), Utils.subByte(sha1_d, 0, 8)));
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
     public static void generateAES_Key() {
         try {
             SALT = Utils.xor(Utils.subByte(NEW_NONCE, 0, 8), Utils.subByte(SERVER_NONCE, 0, 8));
@@ -768,14 +737,6 @@ public class RequestBuilder {
             byte[] sha_enc_data = EncryptData.SHAsum(MESSAGE_D);
             MSG_KEY = Utils.subByte(sha_enc_data, sha_enc_data.length - 16, 16);
             Log.v("DEVELOPER", "MSG_KEY:" + Utils.byteArrayToHex(MSG_KEY));
-
-            /*sha1_a = SHA1 (msg_key + substr (auth_key, x, 32));
-            sha1_b = SHA1 (substr (auth_key, 32+x, 16) + msg_key + substr (auth_key, 48+x, 16));
-            sha1_с = SHA1 (substr (auth_key, 64+x, 32) + msg_key);
-            sha1_d = SHA1 (msg_key + substr (auth_key, 96+x, 32));
-            aes_key = substr (sha1_a, 0, 8) + substr (sha1_b, 8, 12) + substr (sha1_c, 4, 12);
-            aes_iv = substr (sha1_a, 8, 12) + substr (sha1_b, 0, 8) + substr (sha1_c, 16, 4) + substr (sha1_d, 0, 8);*/
-
             int x = 0;
             byte[] sha1_a = EncryptData.SHAsum(Utils.sumByte(MSG_KEY, Utils.subByte(AUTH_KEY, x, 32)));
             byte[] sha1_b = EncryptData.SHAsum(Utils.sumByte(Utils.subByte(AUTH_KEY, 32 + x, 16), Utils.sumByte(MSG_KEY, Utils.subByte(AUTH_KEY, 48 + x, 16))));
@@ -788,8 +749,9 @@ public class RequestBuilder {
             byte[] auth_key_aux_hash = Utils.subByte(EncryptData.SHAsum(AUTH_KEY), 0, 8);
             byte[] SHA = EncryptData.SHAsum(Utils.sumByte(Utils.sumByte(NEW_NONCE, b), auth_key_aux_hash));
             SHA = Utils.subByte(SHA, 4, 16);
-            if (NEW_NONCE_HASH1 == Utils.subByte(SHA, SHA.length - 16, 16)) {
-                Log.v("DEVELOPER", "KEY TRUE!!!!!!!!");
+
+            if (Arrays.equals(NEW_NONCE_HASH1, Utils.subByte(SHA, SHA.length - 16, 16))) {
+                Log.v("DEVELOPER", "KEY TRUE");
             } else {
                 Log.v("DEVELOPER", "KEY" + Utils.byteArrayToHex(NEW_NONCE_HASH1) + " ====" + Utils.byteArrayToHex(SHA));
             }

@@ -14,6 +14,7 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.net.Socket;
 import java.util.HashMap;
+import java.util.Random;
 
 /**
  * Created by user on 7/19/13.
@@ -45,16 +46,7 @@ public class TCPLink extends Service {
     public void onDestroy() {
     }
 
-    // Здесь выполняем инициализацию нужных нам значений
-// и открываем наше сокет-соединение
     private void startService() {
-        /*Log.i("Loger", "Start Service");
-        try {
-            openConnection();
-
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }*/
     }
 
     public void sendReqPqRequest() {
@@ -82,7 +74,6 @@ public class TCPLink extends Service {
             data.context = this;
             // создаем новый поток для сокет-соединения
             new ToSocket().execute(data);
-            Log.v("LOGER", "START EXE");
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -94,14 +85,10 @@ public class TCPLink extends Service {
             // PutData - это класс, с помощью которого мы передадим параметры в
             // создаваемый поток
             PutData data = new PutData();
-            /*HashMap<String,Object> objectHashMap = Parser.parse_server_DH_inner_data(EncryptData.decrypt_message((byte[])
-                    hashMap.get(Parser.ENC_ANSWER), (byte[]) hashMap.get(Parser.SERVER_NONCE), RequestBuilder.NEW_NONCE));*/
-
             data.request = RequestBuilder.create_Set_client_DHRequest(hashMap);
             data.context = this;
             // создаем новый поток для сокет-соединения
             new ToSocket().execute(data);
-            // Log.v("LOGER", "START EXE");
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -222,6 +209,15 @@ public class TCPLink extends Service {
                 //String prop = String.valueOf(mData);
                 Log.v("GET_DATA", "data: " + Utils.byteArrayToHex(mData));
                 HashMap<String, Object> responseMap = Parser.parseResponse(mData);
+                if (responseMap == null) {
+                    if (Parser.parse_PING(mData) == null) {
+                        Log.v("GET_DATA", "FAIL MSG_KEY, RETRY");
+                        RequestBuilder.SESSION_ID = new byte[8];
+                        new Random().nextBytes(RequestBuilder.SESSION_ID);
+                        sendReqPqRequest();
+                    }
+                    return;
+                }
                 if (responseMap.get(Parser.TYPE).equals(Parser.TYPE_RES_PQ)) {
                     sendReq_DH_params(responseMap);
                 } else if (responseMap.get(Parser.TYPE).equals(Parser.TYPE_RES_DH)) {
@@ -229,7 +225,9 @@ public class TCPLink extends Service {
                 } else if (responseMap.get(Parser.TYPE).equals(Parser.TYPE_DH_GEN_OK)) {
                     sendDeveloperInfo(responseMap);
                     Log.v("GET_DATA", "sendDeveloperInfo!!!");
-                } else { Log.v("GET_DATA", "Finish");}
+                } else {
+                    Log.v("GET_DATA", "Finish");
+                }
 
             } catch (Exception e) {
                 MTPapp.showToastMessage("Socket error: " + e.getMessage());
@@ -255,7 +253,6 @@ public class TCPLink extends Service {
                 // Данный цикл будет работать, пока соединение не оборвется
                 // или внешний поток не скажет данному cancel()
                 while (((read = reader.read(mData)) >= 0 && !isCancelled() && z == 0)) {
-                    // "Вызываем" onProgressUpdate каждый раз, когда принято сообщение
                     Log.v("GET_DATA", "read data");
                     //read = reader.read(mData);
                     if (read > 0) return read;

@@ -40,8 +40,6 @@ public class Parser {
     public static HashMap<String, Object> parseResponse(byte[] response) {
 
         try {
-
-
             //Get server_function code
             byte[] code = new byte[4];
             ByteBuffer.wrap(response, 28, code.length).get(code);
@@ -57,8 +55,6 @@ public class Parser {
             if (server_function.equals(TYPE_DH_GEN_OK)) {
                 return parseTYPE_DH_GEN_OK(response);
             }
-
-
         } catch (Exception e) {
             e.printStackTrace();
             return null;
@@ -76,7 +72,6 @@ public class Parser {
         byte[] message = new byte[header_message_length];
         ByteBuffer.wrap(response, 0, header_message_length).get(message);
         int header_pack_id = ByteBuffer.wrap(message, 4, 4).order(ByteOrder.LITTLE_ENDIAN).getInt();
-        Log.v("PARSER", "HEADER: " + header_message_length + " " + header_pack_id);
         long auth_key = ByteBuffer.wrap(message, 8, 8).order(ByteOrder.LITTLE_ENDIAN).getLong();
         long message_id = ByteBuffer.wrap(message, 16, 8).order(ByteOrder.LITTLE_ENDIAN).getLong();
         int message_length = ByteBuffer.wrap(message, 24, 4).order(ByteOrder.LITTLE_ENDIAN).getInt();
@@ -111,7 +106,7 @@ public class Parser {
         BigInteger bigInteger = new BigInteger(PQ);
         BigIntegerMath bigIntegerMath = new BigIntegerMath();
         bigIntegerMath.factor(bigInteger);
-        BigInteger[] pq_result = bigIntegerMath.getfactors();
+        BigInteger[] pq_result = bigIntegerMath.getFactors();
 
         ByteBuffer byteBuffer = ByteBuffer.allocate(4);
         byte[] p_arr = byteBuffer.putInt(pq_result[0].intValue()).array();
@@ -152,7 +147,6 @@ public class Parser {
         byte[] message = new byte[header_message_length];
         ByteBuffer.wrap(response, 0, header_message_length).get(message);
         int header_pack_id = ByteBuffer.wrap(message, 4, 4).order(ByteOrder.LITTLE_ENDIAN).getInt();
-        Log.v("PARSER", "HEADER: " + header_message_length + " " + header_pack_id);
         long auth_key = ByteBuffer.wrap(message, 8, 8).order(ByteOrder.LITTLE_ENDIAN).getLong();
         long message_id = ByteBuffer.wrap(message, 16, 8).order(ByteOrder.LITTLE_ENDIAN).getLong();
         int message_length = ByteBuffer.wrap(message, 24, 4).order(ByteOrder.LITTLE_ENDIAN).getInt();
@@ -192,7 +186,6 @@ public class Parser {
         ByteBuffer.wrap(response, 0, header_message_length).get(message);
 
         int header_pack_id = ByteBuffer.wrap(message, 4, 4).order(ByteOrder.LITTLE_ENDIAN).getInt();
-        Log.v("PARSER", "HEADER: " + header_message_length + " " + header_pack_id);
 
         byte[] auth_key_id = new byte[8];
         ByteBuffer.wrap(message, 8, auth_key_id.length).get(auth_key_id);
@@ -232,9 +225,6 @@ public class Parser {
 
     public static HashMap<String, Object> parse_server_DH_inner_data(byte[] response) {
         HashMap<String, Object> result = new HashMap<String, Object>();
-        //ByteBuffer buffer = ByteBuffer.wrap(response, 0, 4);
-        //buffer.order(ByteOrder.LITTLE_ENDIAN);
-        //int header_message_length = buffer.getInt();
         byte[] message = new byte[564];
         ByteBuffer.wrap(response, 0, message.length).get(message);
         byte[] res_code = new byte[4];
@@ -253,8 +243,6 @@ public class Parser {
         ByteBuffer.wrap(message, 304, 256).get(g_a);
         byte[] server_time = new byte[4];
         ByteBuffer.wrap(message, 560, 4).get(server_time);
-        //Utils.reverseArray(dh_prime);
-
         result.put(Parser.TYPE, TYPE_server_DH_inner_data);
         result.put(Parser.NONCE, nonce);
         result.put(Parser.SERVER_NONCE, server_nonce);
@@ -262,7 +250,6 @@ public class Parser {
         RequestBuilder.G = g;
         result.put(Parser.DH_PRIME, dh_prime);
         RequestBuilder.DH_PRIME = dh_prime;
-        //Utils.reverseArray(g_a);
         result.put(Parser.GA, g_a);
         RequestBuilder.G_A = g_a;
         result.put(Parser.SERVER_TIME, server_time);
@@ -276,4 +263,42 @@ public class Parser {
         return result;
     }
 
+    public static HashMap<String, Object> parse_PING(byte[] response) {
+
+        HashMap<String, Object> result = null;
+        try {
+            result = new HashMap<String, Object>();
+            ByteBuffer buffer = ByteBuffer.wrap(response, 0, 4);
+            buffer.order(ByteOrder.LITTLE_ENDIAN);
+            int header_message_length = buffer.getInt();
+
+            byte[] message = new byte[header_message_length];
+            ByteBuffer.wrap(response, 0, header_message_length).get(message);
+
+
+            byte[] auth_key_id = new byte[8];
+            ByteBuffer.wrap(message, 8, auth_key_id.length).get(auth_key_id);
+
+            byte[] message_Key = new byte[16];
+            ByteBuffer.wrap(message, 16, message_Key.length).get(message_Key);
+
+            byte[] enc_message = new byte[header_message_length - 36];
+            ByteBuffer.wrap(message, 32, enc_message.length).get(enc_message);
+            byte[] dec_msg = new byte[0];
+            try {
+                RequestBuilder.generateAES_Key_DEC(message_Key);
+                dec_msg = EncryptData.igeDecrypt(RequestBuilder.AES_KEY, RequestBuilder.AES_IV, enc_message);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+
+            Log.v("PARSER", "AUTH: " + Utils.byteArrayToHex(auth_key_id));
+            Log.v("PARSER", "MESSAGE_KEY: " + Utils.byteArrayToHex(message_Key));
+            Log.v("PARSER", "ENC_MSG: " + Utils.byteArrayToHex(enc_message));
+            Log.v("PARSER", "DEC_MSG: " + Utils.byteArrayToHex(dec_msg));
+            return result;
+        } catch (Exception e) {
+            return null;
+        }
+    }
 }

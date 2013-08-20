@@ -21,7 +21,6 @@ public class MTPapp extends Application {
     public void onCreate() {
         super.onCreate();
         context = this;
-        //Security.insertProviderAt(new org.spongycastle.asn1.provider.BouncyCastleProvider(), 1);
     }
 
 
@@ -46,11 +45,6 @@ public class MTPapp extends Application {
 
         // This is executed in the context of the main GUI thread
         protected void onPostExecute(String result) {
-
-            /*final Toast toast = Toast.makeText(MTPapp.context, result, Toast.LENGTH_SHORT);
-            toast.setGravity(Gravity.CENTER, 0, 0);
-            toast.show();*/
-
             Handler handler = new Handler();
             handler.postDelayed(new Runnable() {
                 @Override

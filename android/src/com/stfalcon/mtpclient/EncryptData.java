@@ -40,7 +40,7 @@ public class EncryptData {
 
     public static byte[] getDataWithHash(byte[] data) {
         try {
-            byte[] data_with_hash;// = new byte[255];
+            byte[] data_with_hash;
             byte[] data_SHA1 = SHAsum(data);
             ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
             int len = data.length + data_SHA1.length;
@@ -53,9 +53,6 @@ public class EncryptData {
             }
             byte[] random_bytes = new byte[ran_len-1];
             new Random().nextBytes(random_bytes);
-            Log.v("LOGER", "" + data.length);
-            Log.v("LOGER", "" + data_SHA1.length);
-            Log.v("LOGER", "" + random_bytes.length);
             outputStream.write(data_SHA1);
             outputStream.write(data);
             outputStream.write(random_bytes);
@@ -82,9 +79,6 @@ public class EncryptData {
             }
             byte[] random_bytes = new byte[ran_len-1];
             new Random().nextBytes(random_bytes);
-            Log.v("LOGER", "" + data.length);
-            Log.v("LOGER", "" + data_SHA1.length);
-            Log.v("LOGER", "" + random_bytes.length);
             outputStream.write(data_SHA1);
             outputStream.write(data);
             outputStream.write(random_bytes);
@@ -98,21 +92,15 @@ public class EncryptData {
 
     public static byte[] getDataWithHash2(byte[] data) {
         try {
-            byte[] data_with_hash;// = new byte[255];
+            byte[] data_with_hash;
             ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
             int len = data.length;
             int ran_len = 0;
             while (((len + ran_len) % 16) != 0) {
                 ran_len++;
             }
-            /*if ((ran_len + data.length) < 255) {
-                ran_len += 128;
-            }*/
             byte[] random_bytes = new byte[ran_len-1];
             new Random().nextBytes(random_bytes);
-            Log.v("LOGER", "" + data.length);
-            Log.v("LOGER", "" + random_bytes.length);
-            //outputStream.write(data_SHA1);
             outputStream.write(data);
             outputStream.write(random_bytes);
             data_with_hash = outputStream.toByteArray();
@@ -125,7 +113,6 @@ public class EncryptData {
 
     public static byte[] SHAsum(byte[] convertme) throws NoSuchAlgorithmException {
         MessageDigest md = MessageDigest.getInstance("SHA-1");
-        Log.v("ENCRYPT", "SHA_1: " + byteArray2Hex(md.digest(convertme)));
         return md.digest(convertme);
     }
 
@@ -143,8 +130,6 @@ public class EncryptData {
             Cipher cipher = Cipher.getInstance("RSA/None/NoPadding");
             cipher.init(Cipher.ENCRYPT_MODE, getFromString(publicKeyString));
             byte[] encryptedBytes = cipher.doFinal(plain);
-            Log.v("ENCRYPT", "RSA:" + Utils.byteArrayToHex(encryptedBytes));
-            Log.v("ENCRYPT", "RSA l:" + encryptedBytes.length);
             return encryptedBytes;
         } catch (Exception e) {
             e.printStackTrace();
@@ -189,15 +174,10 @@ public class EncryptData {
         try {
             byte[] key = EncryptData.getTmp_aes_key(server_nonce, new_nonce);
             byte[] iv = EncryptData.getTmp_aes_iv(server_nonce, new_nonce);
-            Log.v("DECRYPT", "getTmp_aes_key: " + Utils.byteArrayToHex(key));
-            Log.v("DECRYPT", "getTmp_aes_iv: " + Utils.byteArrayToHex(iv));
             byte[] mes = message;
             byte[] res = EncryptData.igeDecrypt(key, iv, mes);
-            ByteBuffer byteBuffer = ByteBuffer.wrap(res);
             res = Utils.subByte(res, 20, res.length - 20);
             res = Utils.subByte(res, 0, res.length - 8);
-            Log.v("DECRYPT", "(" + mes.length + ")" + " " + Utils.byteArrayToHex(res) + "  (" + res.length + ")");
-            //res = Utils.subByte(res,0,res.length - )
             return res;
         } catch (Exception e) {
             e.printStackTrace();
@@ -215,20 +195,14 @@ public class EncryptData {
 
         byte[] iv1 = Arrays.copyOfRange(IV, 0, blocksize);
         byte[] iv2 = Arrays.copyOfRange(IV, blocksize, IV.length);
-        //Log.v("LOGER","key"+Utils.byteArrayToHex(key));
-        //Log.v("LOGER","iv1"+Utils.byteArrayToHex(iv1));
-        //Log.v("LOGER","iv2"+Utils.byteArrayToHex(iv2));
-
         byte[] decrypted = new byte[0];
 
         byte[] block, tmp;
         for (int i = 0; i < Message.length; i += blocksize) {
             block = java.util.Arrays.copyOfRange(Message, i, i + blocksize);
-            //Log.v("LOGER","block "+Utils.byteArrayToHex(block));
             tmp = Utils.xor(cipher.doFinal(Utils.xor(block, iv2)), iv1);
             iv1 = block;
             iv2 = tmp;
-
             decrypted = Utils.sumByte(decrypted, iv2);
         }
         return decrypted;
@@ -250,14 +224,11 @@ public class EncryptData {
         byte[] block, tmp;
         for (int i = 0; i < Message.length; i += blocksize) {
             block = java.util.Arrays.copyOfRange(Message, i, i + blocksize);
-            //Log.v("LOGER","block "+Utils.byteArrayToHex(block));
             tmp = Utils.xor(cipher.doFinal(Utils.xor(block, iv2)), iv1);
             iv1 = block;
             iv2 = tmp;
-
             decrypted = Utils.sumByte(decrypted, iv2);
         }
-
         return decrypted;
     }
 
