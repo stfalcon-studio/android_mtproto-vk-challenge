@@ -8,6 +8,7 @@ import android.view.Gravity;
 import android.widget.Toast;
 
 import java.io.File;
+import java.security.Security;
 
 /**
  * Created by user on 7/19/13.
@@ -44,11 +45,6 @@ public class MTPapp extends Application {
 
         // This is executed in the context of the main GUI thread
         protected void onPostExecute(String result) {
-
-            final Toast toast = Toast.makeText(MTPapp.context, result, Toast.LENGTH_SHORT);
-            toast.setGravity(Gravity.CENTER, 0, 0);
-            toast.show();
-
             Handler handler = new Handler();
             handler.postDelayed(new Runnable() {
                 @Override
